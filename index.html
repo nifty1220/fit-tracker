@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>FitTrack</title>
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -29,6 +29,22 @@
     font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
     font-size: 16px;
     line-height: 1.4;
+    touch-action: manipulation;
+  }
+
+  /* ── LANDSCAPE LOCK ── */
+  #landscape-overlay {
+    display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    background: #000;
+    flex-direction: column; align-items: center; justify-content: center;
+    gap: 20px; color: #fff; text-align: center; padding: 32px;
+  }
+  #landscape-overlay span:first-child { font-size: 64px; }
+  #landscape-overlay span:last-child { font-size: 20px; font-weight: 700; }
+  @media (orientation: landscape) {
+    #landscape-overlay { display: flex; }
+    #app { display: none !important; }
   }
 
   #app {
@@ -186,17 +202,68 @@
   /* ── EXERCISE BUILDER ── */
   .exercise-row {
     background: var(--elevated); border-radius: var(--radius);
-    padding: 12px; margin-bottom: 8px;
+    padding: 12px; margin: 0 16px 8px;
+    transition: opacity 0.15s;
   }
+  .exercise-row.dragging { opacity: 0.35; }
   .exercise-row-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 10px;
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
   }
-  .exercise-row-header .drag-handle {
-    color: var(--text-muted); cursor: grab; font-size: 18px; padding: 0 4px;
+  .drag-handle {
+    color: var(--text-muted); font-size: 20px; padding: 2px 6px;
+    cursor: grab; touch-action: none; user-select: none; flex-shrink: 0;
+    line-height: 1;
   }
+  .drag-handle:active { cursor: grabbing; }
   .exercise-fields {
     display: grid; grid-template-columns: 1fr 1fr 1fr;
     gap: 8px;
+  }
+  .drag-insert-above {
+    height: 3px; background: var(--accent); border-radius: 2px;
+    margin: 0 16px 6px; display: none;
+  }
+  .drag-insert-above.show { display: block; }
+
+  /* ── SCROLL PICKER ── */
+  .picker-group {
+    display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .picker-group > .pg-label {
+    font-size: 11px; color: var(--text-sec); font-weight: 600;
+    text-transform: uppercase; letter-spacing: 0.5px; text-align: center;
+  }
+  .picker-wrap {
+    position: relative; width: 100%; height: 144px;
+  }
+  .picker-scroll {
+    width: 100%; height: 144px;
+    overflow-y: scroll;
+    scroll-snap-type: y mandatory;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    background: var(--elevated);
+    border-radius: var(--radius);
+  }
+  .picker-scroll::-webkit-scrollbar { display: none; }
+  .picker-item {
+    height: 48px;
+    display: flex; align-items: center; justify-content: center;
+    scroll-snap-align: center;
+    color: var(--text-muted);
+    font-size: 14px; font-weight: 400;
+    user-select: none; cursor: pointer;
+  }
+  .picker-pad { height: 48px; }
+  .picker-line {
+    position: absolute; left: 10px; right: 10px; height: 2px;
+    background: var(--accent); border-radius: 1px; pointer-events: none;
+  }
+  .picker-line-top { top: 48px; }
+  .picker-line-bottom { top: 94px; }
+  .picker-sublabel {
+    font-size: 12px; color: var(--text-sec); text-align: center;
+    min-height: 16px;
   }
 
   /* ── ACTIVE WORKOUT ── */
@@ -232,15 +299,16 @@
   .history-card {
     background: var(--card); border-radius: var(--radius);
     margin: 0 16px 10px; overflow: hidden;
-    cursor: pointer;
   }
   .history-card-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 16px;
+    padding: 14px 16px; cursor: pointer;
   }
+  .history-card-left { flex: 1; min-width: 0; }
   .history-card-name { font-size: 15px; font-weight: 700; }
   .history-card-date { font-size: 12px; color: var(--text-sec); margin-top: 3px; }
-  .history-card-stats { display: flex; gap: 16px; }
+  .history-card-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+  .history-card-stats { display: flex; gap: 12px; }
   .history-stat { font-size: 12px; color: var(--text-sec); display: flex; flex-direction: column; align-items: flex-end; }
   .history-stat strong { font-size: 15px; color: var(--text); font-weight: 700; }
   .history-detail {
@@ -249,6 +317,14 @@
   .history-detail.open { display: block; }
   .history-detail-ex { font-size: 13px; color: var(--text-sec); padding: 6px 0; border-bottom: 1px solid var(--elevated); }
   .history-detail-ex:last-child { border-bottom: none; }
+  .history-delete-confirm {
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 6px 16px 12px; font-size: 13px; color: var(--text-sec);
+    border-top: 1px solid var(--elevated);
+  }
+  .history-delete-confirm.show { display: flex; }
+  .hdc-confirm { background: var(--accent-red); color: #fff; border: none; border-radius: 999px; padding: 5px 14px; font-size: 13px; font-weight: 700; cursor: pointer; }
+  .hdc-cancel { background: var(--elevated); color: var(--text); border: none; border-radius: 999px; padding: 5px 14px; font-size: 13px; font-weight: 600; cursor: pointer; }
 
   /* ── SUB-TABS ── */
   .sub-tabs {
@@ -263,8 +339,8 @@
   .sub-tab.active { background: var(--elevated); color: var(--text); }
 
   /* ── HIIT SCREEN ── */
-  .hiit-config { padding: 0 16px; display: flex; flex-direction: column; gap: 14px; }
-  .hiit-config-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .hiit-config { padding: 0 16px; display: flex; flex-direction: column; gap: 20px; }
+  .hiit-pickers-row { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
 
   /* HIIT Timer Active */
   .hiit-active {
@@ -278,7 +354,6 @@
   }
   .hiit-phase.work { color: var(--accent-red); }
   .hiit-phase.rest { color: var(--accent); }
-  .hiit-phase.prepare { color: #F59E0B; }
   .hiit-countdown {
     font-size: 120px; font-weight: 900; line-height: 1;
     font-variant-numeric: tabular-nums; color: var(--text);
@@ -302,34 +377,29 @@
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--elevated); border-radius: 2px; }
-
-  /* ── REST CONFIG ── */
-  .rest-config-row {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 12px 16px; background: var(--card); margin: 0 16px 10px; border-radius: var(--radius);
-  }
-  .rest-config-row label { font-size: 14px; color: var(--text-sec); }
-  .rest-config-row input { width: 70px; text-align: center; }
 </style>
 </head>
 <body>
+<div id="landscape-overlay">
+  <span>🔄</span>
+  <span>Bitte Gerät drehen</span>
+</div>
+
 <div id="app">
 
   <!-- ══════════════════════════════ WORKOUTS SCREEN ══════════════════════════════ -->
   <div id="screen-workouts" class="screen active">
     <div class="topbar">
       <h1>Meine Workouts</h1>
-      <button class="btn btn-primary btn-sm" onclick="showScreen('screen-builder')">+ Neu</button>
+      <button class="btn btn-primary btn-sm" onclick="showBuilderScreen(null)">+ Neu</button>
     </div>
     <div class="sub-tabs">
       <button class="sub-tab active" onclick="switchWorkoutTab('list', this)">Workouts</button>
       <button class="sub-tab" onclick="switchWorkoutTab('history', this)">Verlauf</button>
     </div>
-
     <div id="workout-list-tab">
       <div id="workout-list"></div>
     </div>
-
     <div id="workout-history-tab" style="display:none;">
       <div id="history-list"></div>
     </div>
@@ -338,7 +408,7 @@
   <!-- ══════════════════════════════ BUILDER SCREEN ══════════════════════════════ -->
   <div id="screen-builder" class="screen">
     <div class="topbar">
-      <button class="back-btn" onclick="showScreen('screen-workouts')">&#8592;</button>
+      <button class="back-btn" onclick="cancelBuilder()">&#8592;</button>
       <h1 id="builder-title">Workout erstellen</h1>
     </div>
     <div style="padding: 0 16px 12px;">
@@ -347,13 +417,11 @@
         <input type="text" id="workout-name-input" placeholder="z.B. Push Day A">
       </div>
     </div>
-
     <div class="section-header">
       <h2>Übungen</h2>
       <button class="btn btn-secondary btn-sm" onclick="addExerciseRow()">+ Übung</button>
     </div>
     <div id="exercise-list"></div>
-
     <div style="padding: 16px; display: flex; gap: 10px;">
       <button class="btn btn-primary" style="flex:1;" onclick="saveWorkout()">Speichern</button>
       <button class="btn btn-secondary" onclick="cancelBuilder()">Abbrechen</button>
@@ -369,7 +437,7 @@
       </div>
       <div style="display:flex;gap:12px;align-items:center;">
         <div style="text-align:right;">
-          <div style="font-size:12px;color:var(--text-sec);">Pause</div>
+          <div style="font-size:12px;color:var(--text-sec);">Pause (s)</div>
           <input type="number" id="rest-duration-input" value="60" min="5" max="300"
             style="width:58px;text-align:center;font-size:14px;padding:6px;background:var(--input);border:none;border-radius:6px;color:var(--text);">
         </div>
@@ -377,8 +445,6 @@
       </div>
     </div>
     <div id="active-exercise-list" style="padding-top:8px;"></div>
-
-    <!-- Rest timer overlay -->
     <div id="rest-overlay" class="rest-timer-overlay" style="display:none;">
       <h2>Pause</h2>
       <div class="rest-timer-count" id="rest-count">60</div>
@@ -392,37 +458,33 @@
     <div id="hiit-config-view">
       <div class="topbar"><h1>HIIT Timer</h1></div>
       <div class="hiit-config">
-        <div class="hiit-config-row">
-          <div class="input-group">
-            <label>Runden</label>
-            <input type="number" id="hiit-rounds" value="8" min="1" max="99">
+        <div class="hiit-pickers-row">
+          <div class="picker-group">
+            <div class="pg-label">Runden</div>
+            <div id="picker-rounds"></div>
+            <div class="picker-sublabel" id="label-rounds"></div>
           </div>
-          <div class="input-group">
-            <label>Vorbereitung (s)</label>
-            <input type="number" id="hiit-prepare" value="10" min="0" max="60">
+          <div class="picker-group">
+            <div class="pg-label">Belastung</div>
+            <div id="picker-work"></div>
+            <div class="picker-sublabel" id="label-work"></div>
           </div>
-        </div>
-        <div class="hiit-config-row">
-          <div class="input-group">
-            <label>Belastung (s)</label>
-            <input type="number" id="hiit-work" value="40" min="5" max="300">
-          </div>
-          <div class="input-group">
-            <label>Pause (s)</label>
-            <input type="number" id="hiit-rest" value="20" min="5" max="300">
+          <div class="picker-group">
+            <div class="pg-label">Pause</div>
+            <div id="picker-rest"></div>
+            <div class="picker-sublabel" id="label-rest"></div>
           </div>
         </div>
-        <button class="btn btn-primary" style="width:100%;margin-top:8px;" onclick="startHIIT()">
+        <button class="btn btn-primary" style="width:100%;" onclick="startHIIT()">
           <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
           Starten
         </button>
       </div>
     </div>
-
     <div id="hiit-active-view" style="display:none;flex-direction:column;flex:1;">
       <div class="hiit-active">
-        <div class="hiit-phase" id="hiit-phase-label">VORBEREITUNG</div>
-        <div class="hiit-countdown" id="hiit-countdown">10</div>
+        <div class="hiit-phase" id="hiit-phase-label">BELASTUNG</div>
+        <div class="hiit-countdown" id="hiit-countdown">40</div>
         <div class="hiit-round" id="hiit-round-label">Runde 1 / 8</div>
         <div class="hiit-progress-bar">
           <div class="hiit-progress-fill" id="hiit-progress-fill" style="width:100%"></div>
@@ -454,34 +516,30 @@
 
 <script>
 // ═══════════════════════════════════════════════════
-//  STORAGE
+//  CONSTANTS & STORAGE
 // ═══════════════════════════════════════════════════
 const KEYS = {
   workouts: 'fittrack_workouts',
-  history: 'fittrack_history',
-  hiit: 'fittrack_hiit_config'
+  history:  'fittrack_history',
+  hiit:     'fittrack_hiit_config'
 };
 
-function load(key) {
-  try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; }
-}
-function loadObj(key, def) {
-  try { return JSON.parse(localStorage.getItem(key)) || def; } catch { return def; }
-}
-function save(key, data) {
-  localStorage.setItem(key, JSON.stringify(data));
-}
+const TIME_VALUES   = [10, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300];
+const ROUND_VALUES  = Array.from({length: 30}, (_, i) => i + 1);
+const SAETZE_VALUES = Array.from({length: 20}, (_, i) => i + 1);
+const WDH_VALUES    = Array.from({length: 50}, (_, i) => i + 1);
+const GEWICHT_VALUES= Array.from({length: 201}, (_, i) => i);
+
+function load(key)        { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
+function loadObj(key, def){ try { return JSON.parse(localStorage.getItem(key)) || def; } catch { return def; } }
+function save(key, data)  { localStorage.setItem(key, JSON.stringify(data)); }
 
 // ═══════════════════════════════════════════════════
 //  AUDIO
 // ═══════════════════════════════════════════════════
-const AudioCtx = window.AudioContext || window.webkitAudioContext;
+const AudioCtxClass = window.AudioContext || window.webkitAudioContext;
 let audioCtx = null;
-
-function getAudioCtx() {
-  if (!audioCtx) audioCtx = new AudioCtx();
-  return audioCtx;
-}
+function getAudioCtx() { if (!audioCtx) audioCtx = new AudioCtxClass(); return audioCtx; }
 
 function beep(freq, duration, type = 'sine', volume = 0.4, delay = 0) {
   try {
@@ -489,8 +547,7 @@ function beep(freq, duration, type = 'sine', volume = 0.4, delay = 0) {
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     osc.connect(gain); gain.connect(ctx.destination);
-    osc.type = type;
-    osc.frequency.value = freq;
+    osc.type = type; osc.frequency.value = freq;
     gain.gain.setValueAtTime(volume, ctx.currentTime + delay);
     gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + delay + duration);
     osc.start(ctx.currentTime + delay);
@@ -498,25 +555,108 @@ function beep(freq, duration, type = 'sine', volume = 0.4, delay = 0) {
   } catch(e) {}
 }
 
-function soundWorkStart() {
-  // Triple short beep
-  beep(880, 0.1, 'square', 0.3, 0.0);
-  beep(880, 0.1, 'square', 0.3, 0.15);
-  beep(1100, 0.15, 'square', 0.35, 0.3);
-}
-function soundRestStart() {
-  // Single long low beep
-  beep(440, 0.6, 'sine', 0.35, 0);
-}
-function soundEnd() {
-  // Ascending finish
-  beep(523, 0.15, 'sine', 0.35, 0.0);
-  beep(659, 0.15, 'sine', 0.35, 0.15);
-  beep(784, 0.15, 'sine', 0.35, 0.3);
-  beep(1047, 0.4, 'sine', 0.4, 0.45);
-}
-function soundRestBeep() {
-  beep(660, 0.12, 'sine', 0.25);
+function soundWorkStart()  { beep(880,0.1,'square',0.3,0); beep(880,0.1,'square',0.3,0.15); beep(1100,0.15,'square',0.35,0.3); }
+function soundRestStart()  { beep(440, 0.6, 'sine', 0.35, 0); }
+function soundEnd()        { beep(523,0.15,'sine',0.35,0); beep(659,0.15,'sine',0.35,0.15); beep(784,0.15,'sine',0.35,0.3); beep(1047,0.4,'sine',0.4,0.45); }
+function soundRestBeep()   { beep(660, 0.12, 'sine', 0.25); }
+
+// ═══════════════════════════════════════════════════
+//  SCROLL PICKER
+// ═══════════════════════════════════════════════════
+const ITEM_H = 48;
+
+function createPicker(values, defaultVal, onChange) {
+  const wrap = document.createElement('div');
+  wrap.className = 'picker-wrap';
+
+  // Green selection lines
+  const lineTop = document.createElement('div');
+  lineTop.className = 'picker-line picker-line-top';
+  const lineBot = document.createElement('div');
+  lineBot.className = 'picker-line picker-line-bottom';
+  wrap.appendChild(lineTop);
+  wrap.appendChild(lineBot);
+
+  const scroll = document.createElement('div');
+  scroll.className = 'picker-scroll';
+
+  // Top pad
+  const padT = document.createElement('div');
+  padT.className = 'picker-pad';
+  scroll.appendChild(padT);
+
+  // Items
+  const itemEls = values.map(v => {
+    const el = document.createElement('div');
+    el.className = 'picker-item';
+    el.textContent = String(v);
+    scroll.appendChild(el);
+    return el;
+  });
+
+  // Bottom pad
+  const padB = document.createElement('div');
+  padB.className = 'picker-pad';
+  scroll.appendChild(padB);
+
+  wrap.appendChild(scroll);
+
+  function updateVisuals() {
+    const rawIdx = scroll.scrollTop / ITEM_H;
+    const idx = Math.round(rawIdx);
+    itemEls.forEach((el, i) => {
+      const dist = Math.abs(i - rawIdx);
+      if (dist < 0.6) {
+        el.style.fontSize   = '20px';
+        el.style.color      = '#ffffff';
+        el.style.fontWeight = '700';
+        el.style.opacity    = '1';
+      } else if (dist < 1.5) {
+        el.style.fontSize   = '15px';
+        el.style.color      = '#B3B3B3';
+        el.style.fontWeight = '400';
+        el.style.opacity    = '0.8';
+      } else {
+        el.style.fontSize   = '12px';
+        el.style.color      = '#535353';
+        el.style.fontWeight = '400';
+        el.style.opacity    = '0.4';
+      }
+    });
+    return idx;
+  }
+
+  scroll.addEventListener('scroll', () => {
+    const idx = updateVisuals();
+    if (onChange && idx >= 0 && idx < values.length) onChange(values[idx]);
+  }, { passive: true });
+
+  // Click on item to snap to it
+  itemEls.forEach((el, i) => {
+    el.addEventListener('click', () => {
+      scroll.scrollTo({ top: i * ITEM_H, behavior: 'smooth' });
+    });
+  });
+
+  const defaultIdx = Math.max(0, values.indexOf(defaultVal));
+
+  // deferred init — must be called after element is in the visible DOM
+  wrap._init = function() {
+    scroll.scrollTop = defaultIdx * ITEM_H;
+    updateVisuals();
+  };
+
+  wrap.getValue = function() {
+    const idx = Math.max(0, Math.min(Math.round(scroll.scrollTop / ITEM_H), values.length - 1));
+    return values[idx];
+  };
+
+  wrap.setValue = function(val) {
+    const idx = values.indexOf(val);
+    if (idx >= 0) { scroll.scrollTop = idx * ITEM_H; updateVisuals(); }
+  };
+
+  return wrap;
 }
 
 // ═══════════════════════════════════════════════════
@@ -534,7 +674,7 @@ function navTo(tab) {
     renderHistory();
   } else {
     showScreen('screen-hiit');
-    loadHIITConfig();
+    initHIITPickersIfNeeded();
   }
 }
 
@@ -548,9 +688,13 @@ function showScreen(id) {
 // ═══════════════════════════════════════════════════
 //  WORKOUT LIST
 // ═══════════════════════════════════════════════════
+function esc(s) {
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
 function renderWorkoutList() {
   const workouts = load(KEYS.workouts);
-  const history = load(KEYS.history);
+  const history  = load(KEYS.history);
   const el = document.getElementById('workout-list');
 
   if (!workouts.length) {
@@ -566,31 +710,25 @@ function renderWorkoutList() {
   el.innerHTML = workouts.map((w, i) => {
     const sessions = history.filter(h => h.workoutId === w.id);
     const last = sessions.length ? new Date(sessions[sessions.length-1].date).toLocaleDateString('de-DE') : 'Nie';
-    return `<div class="workout-card" onclick="openWorkoutMenu(${i})">
+    return `<div class="workout-card">
       <div class="workout-card-info">
         <div class="workout-card-name">${esc(w.name)}</div>
         <div class="workout-card-meta">${w.exercises.length} Übungen · Zuletzt: ${last}</div>
       </div>
-      <div class="workout-card-actions" onclick="event.stopPropagation()">
-        <button class="btn-icon" title="Bearbeiten" onclick="editWorkout(${i})">
+      <div class="workout-card-actions">
+        <button class="btn-icon" title="Bearbeiten" onclick="showBuilderScreen(${i})">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
         <button class="btn-icon" title="Löschen" onclick="deleteWorkout(${i})" style="color:var(--accent-red)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="event.stopPropagation(); startWorkout(${i})">
+      <button class="btn btn-primary btn-sm" onclick="startWorkout(${i})">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
         Starten
       </button>
     </div>`;
   }).join('');
-}
-
-function openWorkoutMenu(i) { /* tap on card does nothing extra */ }
-
-function esc(s) {
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
 function deleteWorkout(i) {
@@ -606,73 +744,122 @@ function deleteWorkout(i) {
 // ═══════════════════════════════════════════════════
 let editingWorkoutIndex = null;
 
-function showScreen_builder(workoutIndex = null) {
+function showBuilderScreen(workoutIndex) {
   editingWorkoutIndex = workoutIndex;
   const titleEl = document.getElementById('builder-title');
-  const nameEl = document.getElementById('workout-name-input');
-  const listEl = document.getElementById('exercise-list');
+  const nameEl  = document.getElementById('workout-name-input');
+  const listEl  = document.getElementById('exercise-list');
+
+  listEl.innerHTML = '';
 
   if (workoutIndex !== null) {
     const w = load(KEYS.workouts)[workoutIndex];
     titleEl.textContent = 'Workout bearbeiten';
     nameEl.value = w.name;
-    listEl.innerHTML = '';
     w.exercises.forEach(ex => addExerciseRow(ex));
   } else {
     titleEl.textContent = 'Workout erstellen';
     nameEl.value = '';
-    listEl.innerHTML = '';
     addExerciseRow();
   }
-  showScreen('screen-builder');
-}
 
-function editWorkout(i) { showScreen_builder(i); }
+  showScreen('screen-builder');
+  enableDragReorder(listEl);
+}
 
 function addExerciseRow(ex = null) {
   const listEl = document.getElementById('exercise-list');
-  const div = document.createElement('div');
-  div.className = 'exercise-row';
-  div.style.margin = '0 16px 8px';
-  div.innerHTML = `
-    <div class="exercise-row-header">
-      <span class="drag-handle">⠿</span>
-      <input type="text" placeholder="Übungsname" value="${ex ? esc(ex.name) : ''}" class="ex-name" style="flex:1;">
-      <button class="btn-icon" onclick="this.closest('.exercise-row').remove()" style="color:var(--accent-red)">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-      </button>
-    </div>
-    <div class="exercise-fields">
-      <div class="input-group">
-        <label>Sätze</label>
-        <input type="number" value="${ex ? ex.sets : 3}" min="1" max="99" class="ex-sets">
-      </div>
-      <div class="input-group">
-        <label>Wdh.</label>
-        <input type="number" value="${ex ? ex.reps : 10}" min="1" max="999" class="ex-reps">
-      </div>
-      <div class="input-group">
-        <label>kg</label>
-        <input type="number" value="${ex ? ex.weight : 0}" min="0" max="9999" step="0.5" class="ex-weight">
-      </div>
-    </div>`;
-  listEl.appendChild(div);
+
+  // Insert-line indicator (above each row)
+  const insertLine = document.createElement('div');
+  insertLine.className = 'drag-insert-above';
+
+  const row = document.createElement('div');
+  row.className = 'exercise-row';
+
+  // ── Header ──
+  const header = document.createElement('div');
+  header.className = 'exercise-row-header';
+
+  const handle = document.createElement('span');
+  handle.className = 'drag-handle';
+  handle.textContent = '⠿';
+  handle.title = 'Ziehen zum Sortieren';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Übungsname';
+  nameInput.className = 'ex-name';
+  nameInput.value = ex ? esc(ex.name) : '';
+  nameInput.style.flex = '1';
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn-icon';
+  delBtn.style.color = 'var(--accent-red)';
+  delBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  delBtn.onclick = () => { insertLine.remove(); row.remove(); };
+
+  header.appendChild(handle);
+  header.appendChild(nameInput);
+  header.appendChild(delBtn);
+
+  // ── Picker fields ──
+  const fields = document.createElement('div');
+  fields.className = 'exercise-fields';
+
+  function makePickerGroup(label, values, defVal) {
+    const group = document.createElement('div');
+    group.className = 'picker-group';
+    const lbl = document.createElement('div');
+    lbl.className = 'pg-label';
+    lbl.textContent = label;
+    const picker = createPicker(values, defVal, null);
+    group.appendChild(lbl);
+    group.appendChild(picker);
+    return { group, picker };
+  }
+
+  const { group: gSaetze,  picker: pSaetze  } = makePickerGroup('Sätze',   SAETZE_VALUES,  ex ? ex.sets   : 3);
+  const { group: gWdh,     picker: pWdh     } = makePickerGroup('Wdh.',    WDH_VALUES,     ex ? ex.reps   : 10);
+  const { group: gGewicht, picker: pGewicht } = makePickerGroup('kg',      GEWICHT_VALUES, ex ? ex.weight : 0);
+
+  fields.appendChild(gSaetze);
+  fields.appendChild(gWdh);
+  fields.appendChild(gGewicht);
+
+  row.appendChild(header);
+  row.appendChild(fields);
+
+  // Store picker refs as JS properties on the row element
+  row._pSaetze  = pSaetze;
+  row._pWdh     = pWdh;
+  row._pGewicht = pGewicht;
+
+  listEl.appendChild(insertLine);
+  listEl.appendChild(row);
+
+  // Init scroll positions after mount (element must be in DOM)
+  setTimeout(() => {
+    pSaetze._init();
+    pWdh._init();
+    pGewicht._init();
+  }, 60);
 }
 
 function saveWorkout() {
   const name = document.getElementById('workout-name-input').value.trim();
   if (!name) { alert('Bitte einen Namen eingeben.'); return; }
 
-  const rows = document.querySelectorAll('.exercise-row');
+  const rows = [...document.querySelectorAll('#exercise-list .exercise-row')];
   const exercises = [];
   rows.forEach(row => {
     const n = row.querySelector('.ex-name').value.trim();
     if (!n) return;
     exercises.push({
-      name: n,
-      sets: parseInt(row.querySelector('.ex-sets').value) || 1,
-      reps: parseInt(row.querySelector('.ex-reps').value) || 1,
-      weight: parseFloat(row.querySelector('.ex-weight').value) || 0
+      name:   n,
+      sets:   row._pSaetze.getValue(),
+      reps:   row._pWdh.getValue(),
+      weight: row._pGewicht.getValue()
     });
   });
 
@@ -696,6 +883,92 @@ function cancelBuilder() {
 }
 
 // ═══════════════════════════════════════════════════
+//  DRAG-TO-REORDER (exercise builder)
+// ═══════════════════════════════════════════════════
+function enableDragReorder(listEl) {
+  let dragEl = null, dragInsert = null, ghostEl = null, offsetY = 0;
+
+  listEl.addEventListener('pointerdown', startDrag, { passive: false });
+
+  function startDrag(e) {
+    const handle = e.target.closest('.drag-handle');
+    if (!handle) return;
+    const row = handle.closest('.exercise-row');
+    if (!row) return;
+
+    e.preventDefault();
+    dragEl = row;
+    dragInsert = dragEl.previousElementSibling; // the insert-line div above it
+
+    const rect = row.getBoundingClientRect();
+    offsetY = e.clientY - rect.top;
+
+    // Ghost clone
+    ghostEl = row.cloneNode(true);
+    ghostEl.style.cssText = `
+      position:fixed; left:${rect.left}px; top:${rect.top}px;
+      width:${rect.width}px; z-index:500; pointer-events:none;
+      opacity:0.92; border-radius:8px; background:var(--elevated);
+      box-shadow:0 8px 24px rgba(0,0,0,0.5);
+    `;
+    document.body.appendChild(ghostEl);
+    row.style.opacity = '0.3';
+
+    document.addEventListener('pointermove', onMove, { passive: false });
+    document.addEventListener('pointerup',   onEnd);
+    document.addEventListener('pointercancel', onEnd);
+  }
+
+  function onMove(e) {
+    if (!dragEl) return;
+    e.preventDefault();
+
+    const newTop = e.clientY - offsetY;
+    ghostEl.style.top = newTop + 'px';
+
+    // Find target position among rows (excluding dragged one)
+    const allRows = [...listEl.querySelectorAll('.exercise-row')].filter(r => r !== dragEl);
+    const allLines = [...listEl.querySelectorAll('.drag-insert-above')];
+
+    // Hide all insert lines
+    allLines.forEach(l => l.classList.remove('show'));
+
+    let insertBeforeRow = null;
+    let insertBeforeLine = null;
+    for (const r of allRows) {
+      const rect = r.getBoundingClientRect();
+      if (e.clientY < rect.top + rect.height / 2) {
+        insertBeforeRow  = r;
+        insertBeforeLine = r.previousElementSibling;
+        break;
+      }
+    }
+
+    if (insertBeforeRow) {
+      insertBeforeLine && insertBeforeLine.classList.add('show');
+      listEl.insertBefore(dragInsert, insertBeforeRow.previousElementSibling);
+      listEl.insertBefore(dragEl, insertBeforeRow);
+    } else {
+      // Append at end
+      listEl.appendChild(dragInsert);
+      listEl.appendChild(dragEl);
+    }
+  }
+
+  function onEnd() {
+    if (!dragEl) return;
+    dragEl.style.opacity = '';
+    ghostEl && ghostEl.remove();
+    // Hide all insert lines
+    listEl.querySelectorAll('.drag-insert-above').forEach(l => l.classList.remove('show'));
+    dragEl = ghostEl = dragInsert = null;
+    document.removeEventListener('pointermove', onMove);
+    document.removeEventListener('pointerup',   onEnd);
+    document.removeEventListener('pointercancel', onEnd);
+  }
+}
+
+// ═══════════════════════════════════════════════════
 //  ACTIVE WORKOUT SESSION
 // ═══════════════════════════════════════════════════
 let sessionState = null;
@@ -705,16 +978,13 @@ let restInterval = null;
 function startWorkout(i) {
   const workout = load(KEYS.workouts)[i];
   sessionState = {
-    workoutId: workout.id,
+    workoutId:   workout.id,
     workoutName: workout.name,
-    startTime: Date.now(),
-    exercises: workout.exercises.map(ex => ({
+    startTime:   Date.now(),
+    exercises:   workout.exercises.map(ex => ({
       ...ex,
       sets: Array.from({length: ex.sets}, (_, si) => ({
-        index: si,
-        targetReps: ex.reps,
-        targetWeight: ex.weight,
-        done: false
+        index: si, targetReps: ex.reps, targetWeight: ex.weight, done: false
       }))
     })),
     elapsed: 0
@@ -722,7 +992,6 @@ function startWorkout(i) {
   renderActiveWorkout();
   showScreen('screen-active');
   document.getElementById('bottom-nav').style.display = 'none';
-  // Start session clock
   clearInterval(sessionInterval);
   sessionInterval = setInterval(() => {
     sessionState.elapsed = Math.floor((Date.now() - sessionState.startTime) / 1000);
@@ -734,14 +1003,14 @@ function renderActiveWorkout() {
   const el = document.getElementById('active-exercise-list');
   el.innerHTML = sessionState.exercises.map((ex, ei) => {
     const setsHtml = ex.sets.map((set, si) => `
-      <label class="set-row${set.done ? ' done' : ''}" id="setrow-${ei}-${si}">
+      <div class="set-row${set.done ? ' done' : ''}" id="setrow-${ei}-${si}">
         <div class="check-wrap" onclick="toggleSet(${ei},${si})">
-          <input type="checkbox" ${set.done ? 'checked' : ''} onchange="toggleSet(${ei},${si})">
+          <input type="checkbox" ${set.done ? 'checked' : ''}>
           <div class="check-box"></div>
         </div>
         <div class="set-label">Satz ${si+1}</div>
         <div class="set-info">${set.targetReps} Wdh. · ${set.targetWeight} kg</div>
-      </label>`).join('');
+      </div>`).join('');
     return `<div class="ex-session-card">
       <div class="ex-session-header">${esc(ex.name)}</div>
       ${setsHtml}
@@ -755,7 +1024,6 @@ function toggleSet(ei, si) {
   const row = document.getElementById(`setrow-${ei}-${si}`);
   row.classList.toggle('done', set.done);
   row.querySelector('input[type=checkbox]').checked = set.done;
-
   if (set.done) {
     const restSecs = parseInt(document.getElementById('rest-duration-input').value) || 60;
     startRestTimer(restSecs);
@@ -766,8 +1034,8 @@ function toggleSet(ei, si) {
 function startRestTimer(secs) {
   clearInterval(restInterval);
   let remaining = secs;
-  const overlay = document.getElementById('rest-overlay');
-  const countEl = document.getElementById('rest-count');
+  const overlay  = document.getElementById('rest-overlay');
+  const countEl  = document.getElementById('rest-count');
   overlay.style.display = 'flex';
   countEl.textContent = remaining;
   restInterval = setInterval(() => {
@@ -792,23 +1060,23 @@ function endWorkout() {
   clearInterval(restInterval);
   document.getElementById('rest-overlay').style.display = 'none';
 
-  const totalSets = sessionState.exercises.reduce((acc, ex) => acc + ex.sets.length, 0);
-  const doneSets = sessionState.exercises.reduce((acc, ex) => acc + ex.sets.filter(s => s.done).length, 0);
+  const totalSets = sessionState.exercises.reduce((a, ex) => a + ex.sets.length, 0);
+  const doneSets  = sessionState.exercises.reduce((a, ex) => a + ex.sets.filter(s => s.done).length, 0);
 
   const record = {
-    id: Date.now().toString(),
-    workoutId: sessionState.workoutId,
-    workoutName: sessionState.workoutName,
-    date: new Date().toISOString(),
-    duration: sessionState.elapsed,
-    setsCompleted: doneSets,
+    id:           Date.now().toString(),
+    workoutId:    sessionState.workoutId,
+    workoutName:  sessionState.workoutName,
+    date:         new Date().toISOString(),
+    duration:     sessionState.elapsed,
+    setsCompleted:doneSets,
     totalSets,
     exercises: sessionState.exercises.map(ex => ({
-      name: ex.name,
+      name:          ex.name,
       setsCompleted: ex.sets.filter(s => s.done).length,
-      totalSets: ex.sets.length,
-      targetReps: ex.reps,
-      targetWeight: ex.weight
+      totalSets:     ex.sets.length,
+      targetReps:    ex.reps,
+      targetWeight:  ex.weight
     }))
   };
 
@@ -820,7 +1088,6 @@ function endWorkout() {
   navTo('workouts');
   renderWorkoutList();
   renderHistory();
-  // Switch to history tab
   setTimeout(() => switchWorkoutTab('history', document.querySelectorAll('.sub-tab')[1]), 100);
 }
 
@@ -836,6 +1103,7 @@ function formatTime(secs) {
 function renderHistory() {
   const history = load(KEYS.history).slice().reverse();
   const el = document.getElementById('history-list');
+
   if (!history.length) {
     el.innerHTML = `<div class="empty-state">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
@@ -843,72 +1111,139 @@ function renderHistory() {
     </div>`;
     return;
   }
+
   el.innerHTML = history.map((h, i) => {
     const date = new Date(h.date).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
     const time = new Date(h.date).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
-    const detailHtml = h.exercises.map(ex =>
+    const detailHtml = (h.exercises || []).map(ex =>
       `<div class="history-detail-ex">${esc(ex.name)} — ${ex.setsCompleted}/${ex.totalSets} Sätze · ${ex.targetReps} Wdh. · ${ex.targetWeight} kg</div>`
     ).join('');
-    return `<div class="history-card">
-      <div class="history-card-header" onclick="toggleHistoryDetail(${i})">
-        <div>
+    return `<div class="history-card" id="hcard-${h.id}">
+      <div class="history-card-header" onclick="toggleHistoryDetail('${h.id}')">
+        <div class="history-card-left">
           <div class="history-card-name">${esc(h.workoutName)}</div>
           <div class="history-card-date">${date} · ${time}</div>
         </div>
-        <div class="history-card-stats">
-          <div class="history-stat"><strong>${formatTime(h.duration)}</strong>Zeit</div>
-          <div class="history-stat"><strong>${h.setsCompleted}/${h.totalSets}</strong>Sätze</div>
+        <div class="history-card-right">
+          <div class="history-card-stats">
+            <div class="history-stat"><strong>${formatTime(h.duration)}</strong>Zeit</div>
+            <div class="history-stat"><strong>${h.setsCompleted}/${h.totalSets}</strong>Sätze</div>
+          </div>
+          <button class="btn-icon" style="color:var(--accent-red);flex-shrink:0;"
+            onclick="event.stopPropagation(); showHistoryDeleteConfirm('${h.id}')" title="Löschen">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
+              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
+            </svg>
+          </button>
         </div>
       </div>
-      <div class="history-detail" id="hdetail-${i}">${detailHtml}</div>
+      <div class="history-delete-confirm" id="hdel-${h.id}">
+        <span>Wirklich löschen?</span>
+        <button class="hdc-confirm" onclick="confirmDeleteHistory('${h.id}')">Ja, löschen</button>
+        <button class="hdc-cancel"  onclick="cancelDeleteHistory('${h.id}')">Abbrechen</button>
+      </div>
+      <div class="history-detail" id="hdetail-${h.id}">${detailHtml}</div>
     </div>`;
   }).join('');
 }
 
-function toggleHistoryDetail(i) {
-  const el = document.getElementById('hdetail-' + i);
-  el.classList.toggle('open');
+function toggleHistoryDetail(id) {
+  document.getElementById('hdetail-' + id).classList.toggle('open');
+}
+
+function showHistoryDeleteConfirm(id) {
+  // Hide any other open confirms first
+  document.querySelectorAll('.history-delete-confirm.show').forEach(el => el.classList.remove('show'));
+  document.getElementById('hdel-' + id).classList.add('show');
+}
+
+function cancelDeleteHistory(id) {
+  document.getElementById('hdel-' + id).classList.remove('show');
+}
+
+function confirmDeleteHistory(id) {
+  let history = load(KEYS.history);
+  history = history.filter(h => h.id !== id);
+  save(KEYS.history, history);
+  renderHistory();
 }
 
 function switchWorkoutTab(tab, btn) {
   document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('workout-list-tab').style.display = tab === 'list' ? 'block' : 'none';
+  document.getElementById('workout-list-tab').style.display   = tab === 'list'    ? 'block' : 'none';
   document.getElementById('workout-history-tab').style.display = tab === 'history' ? 'block' : 'none';
 }
 
 // ═══════════════════════════════════════════════════
 //  HIIT TIMER
 // ═══════════════════════════════════════════════════
-let hiitState = null;
+let hiitState    = null;
 let hiitInterval = null;
 
-function loadHIITConfig() {
-  const cfg = loadObj(KEYS.hiit, {rounds:8, work:40, rest:20, prepare:10});
-  document.getElementById('hiit-rounds').value = cfg.rounds;
-  document.getElementById('hiit-work').value = cfg.work;
-  document.getElementById('hiit-rest').value = cfg.rest;
-  document.getElementById('hiit-prepare').value = cfg.prepare;
+// HIIT pickers (lazy-initialized when HIIT tab first opened)
+let pickerRounds = null, pickerWork = null, pickerRest = null;
+let hiitPickersReady = false;
+
+function nearestTimeValue(v) {
+  return TIME_VALUES.reduce((prev, curr) => Math.abs(curr - v) < Math.abs(prev - v) ? curr : prev);
+}
+
+function initHIITPickersIfNeeded() {
+  if (hiitPickersReady) return;
+
+  const cfg = loadObj(KEYS.hiit, { rounds: 8, work: 40, rest: 20 });
+  const roundsVal = Math.max(1, Math.min(30, cfg.rounds || 8));
+  const workVal   = nearestTimeValue(cfg.work  || 40);
+  const restVal   = nearestTimeValue(cfg.rest  || 20);
+
+  pickerRounds = createPicker(ROUND_VALUES, roundsVal, (v) => {
+    document.getElementById('label-rounds').textContent = v + ' Runden';
+  });
+  pickerWork = createPicker(TIME_VALUES, workVal, (v) => {
+    document.getElementById('label-work').textContent = v + ' Sek.';
+  });
+  pickerRest = createPicker(TIME_VALUES, restVal, (v) => {
+    document.getElementById('label-rest').textContent = v + ' Sek.';
+  });
+
+  document.getElementById('picker-rounds').appendChild(pickerRounds);
+  document.getElementById('picker-work').appendChild(pickerWork);
+  document.getElementById('picker-rest').appendChild(pickerRest);
+
+  document.getElementById('label-rounds').textContent = roundsVal + ' Runden';
+  document.getElementById('label-work').textContent   = workVal + ' Sek.';
+  document.getElementById('label-rest').textContent   = restVal + ' Sek.';
+
+  // Init scroll positions after the HIIT screen is visible
+  setTimeout(() => {
+    pickerRounds._init();
+    pickerWork._init();
+    pickerRest._init();
+  }, 60);
+
+  hiitPickersReady = true;
 }
 
 function startHIIT() {
-  const rounds = parseInt(document.getElementById('hiit-rounds').value) || 8;
-  const work = parseInt(document.getElementById('hiit-work').value) || 40;
-  const rest = parseInt(document.getElementById('hiit-rest').value) || 20;
-  const prepare = parseInt(document.getElementById('hiit-prepare').value) || 0;
-  save(KEYS.hiit, {rounds, work, rest, prepare});
+  const rounds = pickerRounds.getValue();
+  const work   = pickerWork.getValue();
+  const rest   = pickerRest.getValue();
+  save(KEYS.hiit, { rounds, work, rest });
 
   hiitState = {
-    rounds, work, rest, prepare,
-    currentRound: 1,
-    phase: prepare > 0 ? 'prepare' : 'work',
-    remaining: prepare > 0 ? prepare : work,
-    phaseDuration: prepare > 0 ? prepare : work,
-    paused: false,
-    done: false
+    rounds, work, rest,
+    currentRound:  1,
+    phase:         'work',
+    remaining:     work,
+    phaseDuration: work,
+    paused:        false,
+    done:          false
   };
-  if (prepare === 0) soundWorkStart();
+  soundWorkStart();
   renderHIITActive();
+
   document.getElementById('hiit-config-view').style.display = 'none';
   document.getElementById('hiit-active-view').style.display = 'flex';
 
@@ -918,49 +1253,33 @@ function startHIIT() {
 
 function tickHIIT() {
   if (!hiitState || hiitState.paused || hiitState.done) return;
-
   hiitState.remaining--;
   renderHIITActive();
-
-  if (hiitState.remaining <= 0) {
-    advanceHIITPhase();
-  }
+  if (hiitState.remaining <= 0) advanceHIITPhase();
 }
 
 function advanceHIITPhase() {
   const s = hiitState;
-
-  if (s.phase === 'prepare') {
-    s.phase = 'work';
-    s.remaining = s.work;
-    s.phaseDuration = s.work;
-    soundWorkStart();
-
-  } else if (s.phase === 'work') {
+  if (s.phase === 'work') {
     if (s.currentRound >= s.rounds) {
-      // Done
       s.done = true;
-      s.remaining = 0;
       clearInterval(hiitInterval);
       soundEnd();
       document.getElementById('hiit-phase-label').textContent = 'FERTIG!';
-      document.getElementById('hiit-phase-label').className = 'hiit-phase';
+      document.getElementById('hiit-phase-label').className   = 'hiit-phase';
       document.getElementById('hiit-phase-label').style.color = 'var(--accent)';
-      document.getElementById('hiit-countdown').textContent = '✓';
+      document.getElementById('hiit-countdown').textContent   = '✓';
       document.getElementById('hiit-round-label').textContent = `${s.rounds} Runden abgeschlossen`;
       document.getElementById('hiit-progress-fill').style.width = '100%';
       return;
     }
     s.phase = 'rest';
-    s.remaining = s.rest;
-    s.phaseDuration = s.rest;
+    s.remaining = s.phaseDuration = s.rest;
     soundRestStart();
-
-  } else if (s.phase === 'rest') {
+  } else {
     s.currentRound++;
     s.phase = 'work';
-    s.remaining = s.work;
-    s.phaseDuration = s.work;
+    s.remaining = s.phaseDuration = s.work;
     soundWorkStart();
   }
   renderHIITActive();
@@ -968,28 +1287,20 @@ function advanceHIITPhase() {
 
 function renderHIITActive() {
   const s = hiitState;
-  const phaseEl = document.getElementById('hiit-phase-label');
-  const countEl = document.getElementById('hiit-countdown');
-  const roundEl = document.getElementById('hiit-round-label');
-  const fillEl = document.getElementById('hiit-progress-fill');
-  const pauseBtn = document.getElementById('hiit-pause-btn');
+  const phaseEl   = document.getElementById('hiit-phase-label');
+  const countEl   = document.getElementById('hiit-countdown');
+  const roundEl   = document.getElementById('hiit-round-label');
+  const fillEl    = document.getElementById('hiit-progress-fill');
+  const pauseBtn  = document.getElementById('hiit-pause-btn');
 
-  const labels = {work: 'BELASTUNG', rest: 'PAUSE', prepare: 'VORBEREITUNG'};
-  const classes = {work: 'hiit-phase work', rest: 'hiit-phase rest', prepare: 'hiit-phase prepare'};
-
-  phaseEl.textContent = labels[s.phase] || '';
-  phaseEl.className = classes[s.phase] || 'hiit-phase';
+  phaseEl.textContent = s.phase === 'work' ? 'BELASTUNG' : 'PAUSE';
+  phaseEl.className   = `hiit-phase ${s.phase}`;
   phaseEl.style.color = '';
   countEl.textContent = s.remaining;
-
-  if (s.phase === 'prepare') {
-    roundEl.textContent = `Start in ${s.remaining}s`;
-  } else {
-    roundEl.textContent = `Runde ${s.currentRound} / ${s.rounds}`;
-  }
+  roundEl.textContent = `Runde ${s.currentRound} / ${s.rounds}`;
 
   const pct = s.phaseDuration > 0 ? (s.remaining / s.phaseDuration) * 100 : 0;
-  fillEl.style.width = pct + '%';
+  fillEl.style.width      = pct + '%';
   fillEl.style.background = s.phase === 'work' ? 'var(--accent-red)' : 'var(--accent)';
 
   pauseBtn.textContent = s.paused ? 'Weiter' : 'Pause';
@@ -1015,11 +1326,10 @@ showScreen('screen-workouts');
 document.getElementById('bottom-nav').style.display = 'flex';
 renderWorkoutList();
 renderHistory();
-loadHIITConfig();
 
-// unlock audio on first user interaction
-document.body.addEventListener('touchstart', () => { getAudioCtx(); }, {once: true, passive: true});
-document.body.addEventListener('click', () => { getAudioCtx(); }, {once: true});
+// Unlock audio context on first user interaction
+document.body.addEventListener('touchstart', () => getAudioCtx(), { once: true, passive: true });
+document.body.addEventListener('click',      () => getAudioCtx(), { once: true });
 </script>
 </body>
 </html>
