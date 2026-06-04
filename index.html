@@ -379,6 +379,46 @@
   @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   .screen.active { animation: fadeIn 200ms ease; }
 
+  /* ── HIIT HISTORY ── */
+  .hiit-verlauf-section { padding: 0 16px 16px; }
+  .hiit-verlauf-toggle {
+    width: 100%; background: transparent; border: 2px solid var(--text-sec);
+    color: var(--text-sec); border-radius: 999px; padding: 10px 20px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: color var(--transition), border-color var(--transition);
+  }
+  .hiit-verlauf-toggle:active { transform: scale(0.97); }
+  .hiit-verlauf-list {
+    margin-top: 12px; display: none; max-height: 340px;
+    overflow-y: auto; border-radius: var(--radius);
+  }
+  .hiit-verlauf-list.open { display: block; }
+  .hiit-hist-card {
+    background: var(--card); border-radius: var(--radius);
+    margin-bottom: 8px; overflow: hidden;
+  }
+  .hiit-hist-header {
+    display: flex; align-items: center; padding: 12px 14px; gap: 8px;
+  }
+  .hiit-hist-info { flex: 1; min-width: 0; }
+  .hiit-hist-date { font-size: 13px; font-weight: 700; }
+  .hiit-hist-meta { font-size: 12px; color: var(--text-sec); margin-top: 3px; }
+  .hiit-hist-del {
+    background: none; border: none; cursor: pointer;
+    color: var(--text-muted); padding: 4px; flex-shrink: 0;
+    transition: color var(--transition); display: flex; align-items: center;
+  }
+  .hiit-hist-del:hover { color: var(--accent-red); }
+  .hiit-hist-confirm {
+    display: none; align-items: center; gap: 8px; flex-wrap: wrap;
+    padding: 6px 14px 10px; font-size: 12px; color: var(--text-sec);
+    border-top: 1px solid var(--elevated);
+  }
+  .hiit-hist-confirm.show { display: flex; }
+  .hiit-hist-empty {
+    color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px 0;
+  }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -486,6 +526,10 @@
           Starten
         </button>
       </div>
+      <div class="hiit-verlauf-section">
+        <button class="hiit-verlauf-toggle" onclick="toggleHIITVerlauf(this)">Verlauf anzeigen</button>
+        <div class="hiit-verlauf-list" id="hiit-verlauf-list"></div>
+      </div>
     </div>
     <div id="hiit-active-view" style="display:none;flex-direction:column;flex:1;">
       <div class="hiit-active">
@@ -525,9 +569,10 @@
 //  CONSTANTS & STORAGE
 // ═══════════════════════════════════════════════════
 const KEYS = {
-  workouts: 'fittrack_workouts',
-  history:  'fittrack_history',
-  hiit:     'fittrack_hiit_config'
+  workouts:    'fittrack_workouts',
+  history:     'fittrack_history',
+  hiit:        'fittrack_hiit_config',
+  hiitHistory: 'fittrack_hiit_history'
 };
 
 function load(key)        { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
@@ -559,6 +604,34 @@ function soundWorkStart()  { beep(880,0.1,'square',0.3,0); beep(880,0.1,'square'
 function soundRestStart()  { beep(440, 0.6, 'sine', 0.35, 0); }
 function soundEnd()        { beep(523,0.15,'sine',0.35,0); beep(659,0.15,'sine',0.35,0.15); beep(784,0.15,'sine',0.35,0.3); beep(1047,0.4,'sine',0.4,0.45); }
 function soundRestBeep()   { beep(660, 0.12, 'sine', 0.25); }
+
+// ═══════════════════════════════════════════════════
+//  WAKE LOCK
+// ═══════════════════════════════════════════════════
+let wakeLock = null;
+
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch (_) {}
+}
+
+async function releaseWakeLock() {
+  try {
+    if (wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch (_) {}
+}
+
+// Re-acquire if page becomes visible again while a session is active
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible' && (sessionState || hiitState)) {
+    requestWakeLock();
+  } else {
+    releaseWakeLock();
+  }
+});
 
 // ═══════════════════════════════════════════════════
 //  NAVIGATION
@@ -617,6 +690,9 @@ function renderWorkoutList() {
         <div class="workout-card-meta">${w.exercises.length} Übungen · Zuletzt: ${last}</div>
       </div>
       <div class="workout-card-actions">
+        <button class="btn-icon" title="Duplizieren" onclick="duplicateWorkout(${i})">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
+        </button>
         <button class="btn-icon" title="Bearbeiten" onclick="showBuilderScreen(${i})">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
         </button>
@@ -638,6 +714,21 @@ function deleteWorkout(i) {
   workouts.splice(i, 1);
   save(KEYS.workouts, workouts);
   renderWorkoutList();
+}
+
+function duplicateWorkout(i) {
+  const workouts = load(KEYS.workouts);
+  const src = workouts[i];
+  const copy = {
+    id:        Date.now().toString(),
+    name:      'Kopie von ' + src.name,
+    exercises: JSON.parse(JSON.stringify(src.exercises))
+  };
+  // Insert at the top
+  workouts.unshift(copy);
+  save(KEYS.workouts, workouts);
+  // Open the copy (now at index 0) in the editor immediately
+  showBuilderScreen(0);
 }
 
 // ═══════════════════════════════════════════════════
@@ -883,6 +974,7 @@ function startWorkout(i) {
   renderActiveWorkout();
   showScreen('screen-active');
   document.getElementById('bottom-nav').style.display = 'none';
+  requestWakeLock();
   clearInterval(sessionInterval);
   sessionInterval = setInterval(() => {
     sessionState.elapsed = Math.floor((Date.now() - sessionState.startTime) / 1000);
@@ -949,6 +1041,7 @@ function endWorkout() {
   if (!confirm('Workout beenden und speichern?')) return;
   clearInterval(sessionInterval);
   clearInterval(restInterval);
+  releaseWakeLock();
   document.getElementById('rest-overlay').style.display = 'none';
 
   const totalSets = sessionState.exercises.reduce((a, ex) => a + ex.sets.length, 0);
@@ -1093,10 +1186,12 @@ function startHIIT() {
     remaining:     work,
     phaseDuration: work,
     paused:        false,
-    done:          false
+    done:          false,
+    startTime:     Date.now()
   };
   soundWorkStart();
   renderHIITActive();
+  requestWakeLock();
 
   document.getElementById('hiit-config-view').style.display = 'none';
   document.getElementById('hiit-active-view').style.display = 'flex';
@@ -1119,6 +1214,8 @@ function advanceHIITPhase() {
       s.done = true;
       clearInterval(hiitInterval);
       soundEnd();
+      releaseWakeLock();
+      saveHIITHistory(s, s.rounds);
       document.getElementById('hiit-phase-label').textContent = 'FERTIG!';
       document.getElementById('hiit-phase-label').className   = 'hiit-phase';
       document.getElementById('hiit-phase-label').style.color = 'var(--accent)';
@@ -1167,10 +1264,99 @@ function toggleHIITPause() {
 }
 
 function stopHIIT() {
+  if (hiitState && !hiitState.done) {
+    // Count fully completed work rounds
+    const completedRounds = hiitState.phase === 'rest'
+      ? hiitState.currentRound          // just finished that work phase
+      : hiitState.currentRound - 1;     // stopped mid-work
+    saveHIITHistory(hiitState, Math.max(0, completedRounds));
+  }
   clearInterval(hiitInterval);
+  releaseWakeLock();
   hiitState = null;
   document.getElementById('hiit-active-view').style.display = 'none';
   document.getElementById('hiit-config-view').style.display = 'block';
+  renderHIITVerlauf();
+}
+
+// ═══════════════════════════════════════════════════
+//  HIIT HISTORY
+// ═══════════════════════════════════════════════════
+function saveHIITHistory(s, roundsDone) {
+  const elapsed = Math.floor((Date.now() - s.startTime) / 1000);
+  const entry = {
+    id:           Date.now().toString(),
+    date:         new Date().toISOString(),
+    rounds:       s.rounds,
+    roundsDone:   roundsDone,
+    work:         s.work,
+    rest:         s.rest,
+    elapsed
+  };
+  const hist = load(KEYS.hiitHistory);
+  hist.push(entry);
+  save(KEYS.hiitHistory, hist);
+}
+
+function toggleHIITVerlauf(btn) {
+  const list = document.getElementById('hiit-verlauf-list');
+  const open = list.classList.toggle('open');
+  btn.textContent = open ? 'Verlauf ausblenden' : 'Verlauf anzeigen';
+  if (open) renderHIITVerlauf();
+}
+
+function renderHIITVerlauf() {
+  const list = document.getElementById('hiit-verlauf-list');
+  if (!list.classList.contains('open')) return;
+
+  const hist = load(KEYS.hiitHistory).slice().reverse();
+  if (!hist.length) {
+    list.innerHTML = '<div class="hiit-hist-empty">Noch keine HIIT Sessions gespeichert</div>';
+    return;
+  }
+
+  const DE_DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  list.innerHTML = hist.map(h => {
+    const d = new Date(h.date);
+    const dayStr = DE_DAYS[d.getDay()];
+    const dateStr = d.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'});
+    return `<div class="hiit-hist-card">
+      <div class="hiit-hist-header">
+        <div class="hiit-hist-info">
+          <div class="hiit-hist-date">${dayStr}, ${dateStr}</div>
+          <div class="hiit-hist-meta">
+            ${h.roundsDone} / ${h.rounds} Runden &nbsp;·&nbsp;
+            💪 ${h.work}s &nbsp;|&nbsp; ⏸ ${h.rest}s &nbsp;·&nbsp;
+            Gesamtdauer: ${formatTime(h.elapsed)}
+          </div>
+        </div>
+        <button class="hiit-hist-del" onclick="showHIITHistConfirm('${h.id}')" title="Löschen">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+      <div class="hiit-hist-confirm" id="hhc-${h.id}">
+        <span>Wirklich löschen?</span>
+        <button class="hdc-confirm" onclick="confirmHIITHistDelete('${h.id}')">Ja</button>
+        <button class="hdc-cancel"  onclick="cancelHIITHistDelete('${h.id}')">Abbrechen</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showHIITHistConfirm(id) {
+  document.querySelectorAll('.hiit-hist-confirm.show').forEach(el => el.classList.remove('show'));
+  document.getElementById('hhc-' + id).classList.add('show');
+}
+function cancelHIITHistDelete(id) {
+  document.getElementById('hhc-' + id).classList.remove('show');
+}
+function confirmHIITHistDelete(id) {
+  let hist = load(KEYS.hiitHistory);
+  hist = hist.filter(h => h.id !== id);
+  save(KEYS.hiitHistory, hist);
+  renderHIITVerlauf();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1189,6 +1375,7 @@ document.addEventListener('touchmove', e => e.preventDefault(), { passive: false
 document.querySelectorAll('.screen').forEach(el => {
   el.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 });
+document.getElementById('hiit-verlauf-list').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 
 // Unlock audio context on first user interaction
 document.body.addEventListener('touchstart', () => getAudioCtx(), { once: true, passive: true });
