@@ -31,6 +31,7 @@
     font-size: 16px;
     line-height: 1.4;
     touch-action: manipulation;
+    padding-bottom: env(safe-area-inset-bottom);
   }
 
   /* ── LANDSCAPE LOCK ── */
@@ -65,7 +66,7 @@
     flex-direction: column;
     flex: 1;
     overflow-y: auto;
-    padding-bottom: 72px;
+    padding-bottom: calc(72px + env(safe-area-inset-bottom));
   }
   .screen.active { display: flex; }
 
@@ -98,15 +99,16 @@
     display: flex;
     border-top: 1px solid #1a1a1a;
     z-index: 100;
+    padding-bottom: env(safe-area-inset-bottom);
   }
   .nav-tab {
     flex: 1; display: flex; flex-direction: column; align-items: center;
-    gap: 4px; padding: 10px 0 14px;
+    gap: 4px; padding-top: 10px; min-height: 56px;
     background: none; border: none; cursor: pointer;
     color: var(--text-sec); transition: color var(--transition);
     font-size: 11px; font-weight: 600; letter-spacing: 0.5px;
   }
-  .nav-tab svg { width: 24px; height: 24px; }
+  .nav-tab svg { width: 26px; height: 26px; }
   .nav-tab.active { color: var(--accent); }
 
   /* ── BUTTONS ── */
@@ -909,8 +911,12 @@
   <!-- ══════════════════════════════ BOTTOM NAV ══════════════════════════════ -->
   <nav id="bottom-nav">
     <button class="nav-tab active" onclick="navTo('workouts')" id="nav-workouts">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M6.5 6.5h11M6.5 17.5h11M4 12h16M2 9.5l2 2.5-2 2.5M22 9.5l-2 2.5 2 2.5"/>
+      <svg width="26" height="26" viewBox="0 0 26 26" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+        <rect x="1" y="9" width="3" height="8" rx="1"/>
+        <rect x="4" y="11" width="2" height="4" rx="0.5"/>
+        <line x1="6" y1="13" x2="20" y2="13"/>
+        <rect x="20" y="11" width="2" height="4" rx="0.5"/>
+        <rect x="22" y="9" width="3" height="8" rx="1"/>
       </svg>
       Workouts
     </button>
