@@ -426,37 +426,22 @@
     letter-spacing: 1px; text-transform: uppercase;
     padding: 4px 16px 10px;
   }
-  .hiit-prog-scroll {
-    display: flex; gap: 10px;
-    overflow-x: auto; padding: 0 16px 2px;
-    scrollbar-width: none;
-  }
-  .hiit-prog-scroll::-webkit-scrollbar { display: none; }
   .hiit-prog-empty {
-    color: var(--text-muted); font-size: 13px; padding: 4px 0 10px;
+    color: var(--text-muted); font-size: 13px; padding: 4px 16px 10px;
   }
-  .prog-card {
-    min-width: 140px; background: var(--card); border-radius: var(--radius);
-    padding: 12px 12px 40px; flex-shrink: 0; cursor: pointer;
-    position: relative; user-select: none;
-    transition: background var(--transition);
-    -webkit-touch-callout: none;
+  .prog-list-card {
+    display: flex; align-items: center; gap: 12px;
+    background: var(--card); border-radius: var(--radius);
+    padding: 14px 16px; margin: 0 16px 8px;
   }
-  .prog-card:active { background: #202020; }
-  .prog-card-name {
-    font-size: 14px; font-weight: 500; color: var(--text);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    margin-bottom: 5px;
-  }
-  .prog-card-meta { font-size: 12px; color: var(--text-sec); line-height: 1.6; }
-  .prog-card-play {
-    position: absolute; bottom: 10px; right: 10px;
-    width: 30px; height: 30px; border-radius: 50%;
-    background: var(--accent); border: none; cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    transition: transform var(--transition);
-  }
-  .prog-card-play:active { transform: scale(0.88); }
+  .prog-list-info { flex: 1; min-width: 0; }
+  .prog-list-name { font-size: 15px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .prog-list-meta { font-size: 13px; color: var(--text-sec); margin-top: 3px; }
+  .prog-list-actions { display: flex; gap: 4px; flex-shrink: 0; align-items: center; }
+  .prog-list-confirm { display:none; margin-top:8px; padding-top:8px; border-top:1px solid rgba(255,255,255,0.07); }
+  .prog-list-confirm.show { display:block; }
+  .prog-list-confirm p { font-size:13px; color:var(--text-sec); margin-bottom:6px; }
+  .prog-list-confirm-btns { display:flex; gap:8px; }
   .hiit-prog-new-btn {
     display: block; width: 100%;
     background: transparent; border: 2px solid var(--text-sec);
@@ -566,6 +551,82 @@
   }
   textarea.rtn-desc-textarea:focus { background: #4a4a4a; }
   textarea.rtn-desc-textarea::placeholder { color: var(--text-muted); }
+
+  /* ── WORKOUT DETAIL SHEET ── */
+  .wk-sheet-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:300; display:none; }
+  .wk-detail-sheet {
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+    width:100%; max-width:480px; z-index:301;
+    background:#181818; border-radius:16px 16px 0 0; padding:20px 20px 36px;
+    transition:transform 300ms ease; display:none;
+  }
+  .wk-detail-sheet.open { transform:translateX(-50%) translateY(0); }
+  .wk-sheet-pill { width:40px; height:4px; background:#535353; border-radius:2px; margin:0 auto 16px; }
+  .wk-sheet-name { font-size:20px; font-weight:500; color:var(--text); margin-bottom:4px; }
+  .wk-sheet-sub { font-size:14px; color:var(--text-sec); margin-bottom:14px; }
+  .wk-sheet-divider { height:1px; background:#282828; margin-bottom:14px; }
+  .wk-sheet-exlist { max-height:50vh; overflow-y:auto; margin-bottom:16px; }
+  .wk-sheet-ex-row {
+    display:flex; align-items:center; justify-content:space-between;
+    padding:11px 0; border-bottom:1px solid #282828;
+  }
+  .wk-sheet-ex-row:last-child { border-bottom:none; }
+  .wk-sheet-ex-name { font-size:15px; color:var(--text); }
+  .wk-sheet-ex-meta { font-size:13px; color:var(--text-sec); }
+  .wk-sheet-actions { display:flex; gap:10px; }
+  .wk-sheet-actions .btn { flex:1; }
+
+  /* ── WEIGHT SCREEN ── */
+  .weight-entry-area {
+    display:flex; flex-direction:column; align-items:center;
+    padding:24px 16px 20px; gap:10px;
+  }
+  .weight-display { display:flex; align-items:baseline; gap:6px; }
+  .weight-display-val { font-size:48px; font-weight:500; color:var(--text); font-variant-numeric:tabular-nums; }
+  .weight-display-unit { font-size:20px; color:var(--text-sec); }
+  .weight-input-wrap { display:flex; gap:0; }
+  .weight-input-wrap input[type="number"] {
+    width:120px; text-align:center; font-size:16px; font-weight:600;
+    padding:12px 14px; background:var(--elevated); border:none;
+    border-radius:var(--radius); color:var(--text); outline:none;
+    -moz-appearance:textfield;
+  }
+  .weight-input-wrap input::-webkit-inner-spin-button,
+  .weight-input-wrap input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .weight-save-hint { font-size:13px; color:var(--text-muted); }
+  .weight-section-header {
+    font-size:11px; font-weight:700; color:var(--text-sec);
+    letter-spacing:1px; text-transform:uppercase;
+    padding:16px 16px 10px;
+  }
+  .weight-canvas-wrap { padding:0 16px; }
+  .weight-canvas-wrap canvas { width:100%; height:220px; display:block; border-radius:var(--radius); }
+  .weight-canvas-empty { font-size:13px; color:var(--text-muted); text-align:center; padding:40px 16px; }
+  .weight-filter-row { display:flex; gap:8px; justify-content:center; padding:14px 16px 8px; }
+  .weight-filter-btn {
+    padding:6px 18px; border-radius:999px; border:2px solid #282828;
+    background:#282828; color:var(--text-sec); font-size:13px; font-weight:600;
+    cursor:pointer; transition:all var(--transition);
+  }
+  .weight-filter-btn.active { background:var(--accent); border-color:var(--accent); color:#000; }
+  .weight-hist-row {
+    display:flex; align-items:center; gap:10px;
+    padding:11px 16px; border-bottom:1px solid #1a1a1a;
+  }
+  .weight-hist-date { flex:1; font-size:14px; color:var(--text-sec); }
+  .weight-hist-val { font-size:15px; font-weight:600; color:var(--text); }
+  .weight-hist-del {
+    background:none; border:none; cursor:pointer; color:var(--text-muted);
+    padding:4px 6px; display:flex; align-items:center;
+    transition:color var(--transition);
+  }
+  .weight-hist-del:active { color:var(--accent-red); }
+  .weight-hist-confirm {
+    display:none; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:6px 16px 10px; font-size:13px; color:var(--text-sec);
+    border-bottom:1px solid #1a1a1a;
+  }
+  .weight-hist-confirm.show { display:flex; }
 </style>
 </head>
 <body>
@@ -648,8 +709,8 @@
       <div class="topbar"><h1>HIIT Timer</h1></div>
       <div class="hiit-prog-section">
         <div class="hiit-prog-header">My Programmes</div>
-        <div class="hiit-prog-scroll" id="hiit-prog-scroll"></div>
-        <div style="padding:8px 16px 0;">
+        <div id="hiit-prog-list"></div>
+        <div style="padding:8px 16px 4px;">
           <button class="hiit-prog-new-btn" onclick="openProgrammeForm(null)">+ New Programme</button>
         </div>
       </div>
@@ -671,13 +732,17 @@
             <div class="hig-unit">Sekunden</div>
           </div>
         </div>
-        <button class="btn btn-primary" style="width:100%;" onclick="startHIIT()">
-          <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-          Starten
-        </button>
+        <div style="display:flex; justify-content:center; margin:4px 0 8px;">
+          <button class="btn btn-primary" onclick="startHIIT()">
+            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+            Starten
+          </button>
+        </div>
       </div>
       <div class="hiit-verlauf-section">
-        <button class="hiit-verlauf-toggle" onclick="toggleHIITVerlauf(this)">Verlauf anzeigen</button>
+        <div style="display:flex; justify-content:center; margin:4px 0;">
+          <button class="hiit-verlauf-toggle" style="width:auto;" onclick="toggleHIITVerlauf(this)">Verlauf anzeigen</button>
+        </div>
         <div class="hiit-verlauf-list" id="hiit-verlauf-list"></div>
       </div>
     </div>
@@ -745,6 +810,49 @@
     </div>
     <div id="rtn-detail-desc-block"></div>
     <div id="rtn-detail-list"></div>
+  </div>
+
+  <!-- ══════════════════════════════ WEIGHT SCREEN ══════════════════════════════ -->
+  <div id="screen-weight" class="screen">
+    <div class="topbar"><h1>Weight</h1></div>
+    <div class="weight-entry-area">
+      <div class="weight-display">
+        <span class="weight-display-val" id="weight-display-val">--</span>
+        <span class="weight-display-unit">kg</span>
+      </div>
+      <input type="number" id="weight-input" min="20" max="300" step="0.1" placeholder="0.0" style="font-size:16px;">
+      <button class="btn btn-primary" onclick="saveWeightEntry()">Save Today's Weight</button>
+      <div class="weight-save-hint" id="weight-save-hint"></div>
+    </div>
+    <div class="weight-section-header">Progress</div>
+    <div class="weight-canvas-wrap">
+      <canvas id="weight-canvas" height="220"></canvas>
+    </div>
+    <div id="weight-canvas-empty" class="weight-canvas-empty" style="display:none;">Add at least 2 entries to see your progress.</div>
+    <div class="weight-filter-row">
+      <button class="weight-filter-btn" onclick="setWeightFilter('1M', this)">1M</button>
+      <button class="weight-filter-btn" onclick="setWeightFilter('3M', this)">3M</button>
+      <button class="weight-filter-btn active" onclick="setWeightFilter('All', this)">All</button>
+    </div>
+    <div class="weight-section-header">History</div>
+    <div id="weight-hist-list"></div>
+  </div>
+
+  <!-- ══════════════════════════════ WORKOUT DETAIL SHEET ══════════════════════════════ -->
+  <div class="wk-sheet-backdrop" id="wk-sheet-backdrop" onclick="closeWorkoutSheet()"></div>
+  <div class="wk-detail-sheet" id="wk-detail-sheet">
+    <div class="wk-sheet-pill"></div>
+    <div class="wk-sheet-name" id="wk-sheet-name"></div>
+    <div class="wk-sheet-sub" id="wk-sheet-sub"></div>
+    <div class="wk-sheet-divider"></div>
+    <div class="wk-sheet-exlist" id="wk-sheet-exlist"></div>
+    <div class="wk-sheet-actions">
+      <button class="btn btn-secondary" onclick="editFromWorkoutSheet()">Edit</button>
+      <button class="btn btn-primary" onclick="startFromWorkoutSheet()">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        Start Workout
+      </button>
+    </div>
   </div>
 
   <!-- ══════════════════════════════ PROGRAMME ACTION SHEET ══════════════════════════════ -->
@@ -819,6 +927,12 @@
       </svg>
       Routines
     </button>
+    <button class="nav-tab" onclick="navTo('weight')" id="nav-weight">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 3h18v4H3z"/><path d="M3 7l2 14h14l2-14"/><path d="M9 11h6"/>
+      </svg>
+      Weight
+    </button>
   </nav>
 </div>
 
@@ -832,7 +946,8 @@ const KEYS = {
   hiit:        'fittrack_hiit_config',
   hiitHistory:     'fittrack_hiit_history',
   hiitProgrammes:  'fittrack_hiit_programmes',
-  routines:        'fittrack_routines'
+  routines:        'fittrack_routines',
+  weight:          'fittrack_weight'
 };
 
 function load(key)        { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
@@ -910,6 +1025,9 @@ function navTo(tab) {
   } else if (tab === 'routines') {
     showScreen('screen-routines');
     renderRoutineList();
+  } else if (tab === 'weight') {
+    showScreen('screen-weight');
+    renderWeightScreen();
   } else {
     showScreen('screen-hiit');
     loadHIITConfig();
@@ -920,7 +1038,7 @@ function navTo(tab) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const isMain = id === 'screen-workouts' || id === 'screen-hiit' || id === 'screen-routines';
+  const isMain = id === 'screen-workouts' || id === 'screen-hiit' || id === 'screen-routines' || id === 'screen-weight';
   document.getElementById('bottom-nav').style.display = isMain ? 'flex' : 'none';
 }
 
@@ -949,12 +1067,12 @@ function renderWorkoutList() {
   el.innerHTML = workouts.map((w, i) => {
     const sessions = history.filter(h => h.workoutId === w.id);
     const last = sessions.length ? new Date(sessions[sessions.length-1].date).toLocaleDateString('de-DE') : 'Nie';
-    return `<div class="workout-card">
+    return `<div class="workout-card" onclick="openWorkoutSheet(${i})">
       <div class="workout-card-info">
         <div class="workout-card-name">${esc(w.name)}</div>
         <div class="workout-card-meta">${w.exercises.length} Übungen · Zuletzt: ${last}</div>
       </div>
-      <div class="workout-card-actions">
+      <div class="workout-card-actions" onclick="event.stopPropagation()">
         <button class="btn-icon" title="Duplizieren" onclick="duplicateWorkout(${i})">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="8" y="8" width="13" height="13" rx="2"/><path d="M16 8V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h3"/></svg>
         </button>
@@ -965,10 +1083,6 @@ function renderWorkoutList() {
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/></svg>
         </button>
       </div>
-      <button class="btn btn-primary btn-sm" onclick="startWorkout(${i})">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Starten
-      </button>
     </div>`;
   }).join('');
 }
@@ -1856,24 +1970,52 @@ function showRoutineDetail(id) {
 let _activeProgrammeId = null;
 
 function renderHIITProgrammes() {
-  const scroll = document.getElementById('hiit-prog-scroll');
+  const listEl = document.getElementById('hiit-prog-list');
   const progs = load(KEYS.hiitProgrammes);
   if (!progs.length) {
-    scroll.innerHTML = '<div class="hiit-prog-empty">Noch keine Programme gespeichert.</div>';
+    listEl.innerHTML = '<div class="hiit-prog-empty">Noch keine Programme gespeichert.</div>';
     return;
   }
-  scroll.innerHTML = progs.map(p => `
-    <div class="prog-card" id="prog-card-${p.id}" data-id="${p.id}">
-      <div class="prog-card-name">${esc(p.name)}</div>
-      <div class="prog-card-meta">${p.rounds} Runden<br>${p.work}s&nbsp;/&nbsp;${p.rest}s</div>
-      <button class="prog-card-play" onclick="event.stopPropagation();startProgramme('${p.id}')" title="Starten">
-        <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>
-      </button>
+  listEl.innerHTML = progs.map(p => `
+    <div class="prog-list-card">
+      <div class="prog-list-info">
+        <div class="prog-list-name">${esc(p.name)}</div>
+        <div class="prog-list-meta">${p.rounds} Rounds &bull; ${p.work}s work / ${p.rest}s rest</div>
+        <div class="prog-list-confirm" id="prog-del-confirm-${p.id}">
+          <p>Programm wirklich löschen?</p>
+          <div class="prog-list-confirm-btns">
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteProgrammeInline('${p.id}')">Ja, löschen</button>
+            <button class="btn btn-secondary btn-sm" onclick="cancelDeleteProgrammeInline('${p.id}')">Abbrechen</button>
+          </div>
+        </div>
+      </div>
+      <div class="prog-list-actions">
+        <button class="btn-icon" style="color:var(--accent);" onclick="startProgramme('${p.id}')" title="Starten">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+        </button>
+        <button class="btn-icon" onclick="openProgrammeForm('${p.id}')" title="Bearbeiten">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        </button>
+        <button class="btn-icon" style="color:var(--accent-red);" onclick="showDeleteProgrammeInline('${p.id}')" title="Löschen">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
     </div>
   `).join('');
-  progs.forEach(p => {
-    addLongPress(document.getElementById('prog-card-' + p.id), () => openProgrammeActionSheet(p.id));
-  });
+}
+
+function showDeleteProgrammeInline(id) {
+  document.querySelectorAll('.prog-list-confirm.show').forEach(el => el.classList.remove('show'));
+  document.getElementById('prog-del-confirm-' + id).classList.add('show');
+}
+function cancelDeleteProgrammeInline(id) {
+  document.getElementById('prog-del-confirm-' + id).classList.remove('show');
+}
+function confirmDeleteProgrammeInline(id) {
+  let progs = load(KEYS.hiitProgrammes);
+  progs = progs.filter(p => p.id !== id);
+  save(KEYS.hiitProgrammes, progs);
+  renderHIITProgrammes();
 }
 
 function addLongPress(el, cb) {
@@ -2007,6 +2149,281 @@ function startProgramme(id) {
 }
 
 // ═══════════════════════════════════════════════════
+//  WORKOUT DETAIL SHEET
+// ═══════════════════════════════════════════════════
+let _sheetWorkoutIndex = null;
+
+function openWorkoutSheet(i) {
+  const workouts = load(KEYS.workouts);
+  const w = workouts[i];
+  if (!w) return;
+  _sheetWorkoutIndex = i;
+  document.getElementById('wk-sheet-name').textContent = w.name;
+  document.getElementById('wk-sheet-sub').textContent = w.exercises.length + ' Übungen';
+  document.getElementById('wk-sheet-exlist').innerHTML = w.exercises.map(ex =>
+    `<div class="wk-sheet-ex-row">
+      <span class="wk-sheet-ex-name">${esc(ex.name)}</span>
+      <span class="wk-sheet-ex-meta">${ex.sets} sets × ${ex.reps} reps — ${ex.weight} kg</span>
+    </div>`
+  ).join('');
+  const bd = document.getElementById('wk-sheet-backdrop');
+  const sh = document.getElementById('wk-detail-sheet');
+  bd.style.display = 'block';
+  sh.style.display = 'block';
+  requestAnimationFrame(() => sh.classList.add('open'));
+}
+
+function closeWorkoutSheet() {
+  const sh = document.getElementById('wk-detail-sheet');
+  const bd = document.getElementById('wk-sheet-backdrop');
+  sh.classList.remove('open');
+  setTimeout(() => { sh.style.display = 'none'; bd.style.display = 'none'; }, 300);
+}
+
+function editFromWorkoutSheet() {
+  const i = _sheetWorkoutIndex;
+  closeWorkoutSheet();
+  setTimeout(() => showBuilderScreen(i), 320);
+}
+
+function startFromWorkoutSheet() {
+  const i = _sheetWorkoutIndex;
+  closeWorkoutSheet();
+  setTimeout(() => startWorkout(i), 100);
+}
+
+// ═══════════════════════════════════════════════════
+//  WEIGHT PROGRESS
+// ═══════════════════════════════════════════════════
+let _weightFilter = 'All';
+let _weightTooltip = null;
+
+function todayKey() {
+  const d = new Date();
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+}
+
+function renderWeightScreen() {
+  const data = loadObj(KEYS.weight, {});
+  const today = todayKey();
+  const todayVal = data[today];
+  document.getElementById('weight-display-val').textContent = todayVal != null ? todayVal.toFixed(1) : '--';
+  document.getElementById('weight-input').value = todayVal != null ? todayVal : '';
+  document.getElementById('weight-save-hint').textContent = todayVal != null ? 'Last saved today: ' + todayVal.toFixed(1) + ' kg' : '';
+  renderWeightGraph();
+  renderWeightHistory();
+}
+
+function saveWeightEntry() {
+  const val = parseFloat(document.getElementById('weight-input').value);
+  if (isNaN(val) || val < 20 || val > 300) return;
+  const data = loadObj(KEYS.weight, {});
+  data[todayKey()] = val;
+  save(KEYS.weight, data);
+  renderWeightScreen();
+}
+
+function setWeightFilter(f, btn) {
+  _weightFilter = f;
+  document.querySelectorAll('.weight-filter-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  renderWeightGraph();
+}
+
+function getFilteredWeightEntries() {
+  const data = loadObj(KEYS.weight, {});
+  let entries = Object.keys(data).sort().map(k => ({ date: k, val: data[k] }));
+  if (_weightFilter === '1M') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 30);
+    const cutStr = cutoff.toISOString().slice(0,10);
+    entries = entries.filter(e => e.date >= cutStr);
+  } else if (_weightFilter === '3M') {
+    const cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 90);
+    const cutStr = cutoff.toISOString().slice(0,10);
+    entries = entries.filter(e => e.date >= cutStr);
+  }
+  return entries;
+}
+
+function renderWeightGraph() {
+  const canvas = document.getElementById('weight-canvas');
+  const emptyMsg = document.getElementById('weight-canvas-empty');
+  const entries = getFilteredWeightEntries();
+
+  if (entries.length < 2) {
+    canvas.style.display = 'none';
+    emptyMsg.style.display = 'block';
+    return;
+  }
+  canvas.style.display = 'block';
+  emptyMsg.style.display = 'none';
+
+  const dpr = window.devicePixelRatio || 1;
+  const cssW = canvas.parentElement.clientWidth - 32; // 16px padding each side
+  const cssH = 220;
+  canvas.style.width  = cssW + 'px';
+  canvas.style.height = cssH + 'px';
+  canvas.width  = cssW * dpr;
+  canvas.height = cssH * dpr;
+
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { top: 16, right: 16, bottom: 36, left: 46 };
+  const w = cssW - pad.left - pad.right;
+  const h = cssH - pad.top - pad.bottom;
+
+  const vals = entries.map(e => e.val);
+  const minV = Math.min(...vals) - 2;
+  const maxV = Math.max(...vals) + 2;
+  const rangeV = maxV - minV || 1;
+
+  const xFor = i => pad.left + (i / (entries.length - 1)) * w;
+  const yFor = v => pad.top + h - ((v - minV) / rangeV) * h;
+
+  // Grid lines
+  const gridCount = 5;
+  ctx.strokeStyle = '#282828';
+  ctx.lineWidth = 1;
+  for (let g = 0; g <= gridCount; g++) {
+    const gVal = minV + (g / gridCount) * rangeV;
+    const gy = yFor(gVal);
+    ctx.beginPath();
+    ctx.moveTo(pad.left, gy);
+    ctx.lineTo(pad.left + w, gy);
+    ctx.stroke();
+    ctx.fillStyle = '#535353';
+    ctx.font = '10px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText(gVal.toFixed(1), pad.left - 6, gy + 4);
+  }
+
+  // X-axis labels (smart spacing)
+  const maxLabels = Math.min(6, entries.length);
+  const step = Math.ceil(entries.length / maxLabels);
+  ctx.fillStyle = '#535353';
+  ctx.font = '10px system-ui';
+  ctx.textAlign = 'center';
+  entries.forEach((e, i) => {
+    if (i % step === 0 || i === entries.length - 1) {
+      const d = new Date(e.date + 'T00:00:00');
+      const label = (d.getMonth()+1) + '/' + d.getDate();
+      ctx.fillText(label, xFor(i), cssH - 8);
+    }
+  });
+
+  // Line (bezier)
+  ctx.strokeStyle = '#1DB954';
+  ctx.lineWidth = 2;
+  ctx.lineJoin = 'round';
+  ctx.beginPath();
+  ctx.moveTo(xFor(0), yFor(entries[0].val));
+  for (let i = 1; i < entries.length; i++) {
+    const x0 = xFor(i-1), y0 = yFor(entries[i-1].val);
+    const x1 = xFor(i),   y1 = yFor(entries[i].val);
+    const cpx = (x0 + x1) / 2;
+    ctx.bezierCurveTo(cpx, y0, cpx, y1, x1, y1);
+  }
+  ctx.stroke();
+
+  // Dots
+  ctx.fillStyle = '#1DB954';
+  entries.forEach((e, i) => {
+    ctx.beginPath();
+    ctx.arc(xFor(i), yFor(e.val), 4, 0, Math.PI * 2);
+    ctx.fill();
+  });
+
+  // Touch / tap for tooltip
+  const pts = entries.map((e, i) => ({ x: xFor(i), y: yFor(e.val), e }));
+  canvas.ontouchstart = canvas.onclick = function(ev) {
+    ev.preventDefault();
+    const rect = canvas.getBoundingClientRect();
+    const clientX = ev.touches ? ev.touches[0].clientX : ev.clientX;
+    const clientY = ev.touches ? ev.touches[0].clientY : ev.clientY;
+    const mx = clientX - rect.left;
+    const my = clientY - rect.top;
+    const scaleX = cssW / rect.width;
+    const scaleY = cssH / rect.height;
+    const rx = mx * scaleX;
+    const ry = my * scaleY;
+    let nearest = null, minD = Infinity;
+    pts.forEach(p => {
+      const d = Math.hypot(p.x - rx, p.y - ry);
+      if (d < minD) { minD = d; nearest = p; }
+    });
+    if (nearest && minD < 24) {
+      drawTooltip(ctx, nearest.x, nearest.y, nearest.e, cssW, cssH);
+    } else {
+      renderWeightGraph();
+    }
+  };
+}
+
+function drawTooltip(ctx, x, y, entry, cW, cH) {
+  const d = new Date(entry.date + 'T00:00:00');
+  const label = d.toLocaleDateString('de-DE', {day:'2-digit', month:'short'}) + ' · ' + entry.val.toFixed(1) + ' kg';
+  ctx.font = '12px system-ui';
+  const tw = ctx.measureText(label).width;
+  const bw = tw + 16, bh = 26;
+  let bx = x - bw / 2;
+  let by = y - bh - 10;
+  bx = Math.max(4, Math.min(bx, cW - bw - 4));
+  if (by < 4) by = y + 12;
+  ctx.fillStyle = '#282828';
+  ctx.beginPath();
+  ctx.roundRect(bx, by, bw, bh, 6);
+  ctx.fill();
+  ctx.fillStyle = '#ffffff';
+  ctx.textAlign = 'left';
+  ctx.fillText(label, bx + 8, by + 17);
+}
+
+function renderWeightHistory() {
+  const data = loadObj(KEYS.weight, {});
+  const entries = Object.keys(data).sort().reverse().map(k => ({ date: k, val: data[k] }));
+  const el = document.getElementById('weight-hist-list');
+  if (!entries.length) {
+    el.innerHTML = '<div class="weight-canvas-empty">No entries yet.</div>';
+    return;
+  }
+  const DE_DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
+  el.innerHTML = entries.map(e => {
+    const d = new Date(e.date + 'T00:00:00');
+    const dayStr = DE_DAYS[d.getDay()];
+    const dateStr = d.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'});
+    return `<div>
+      <div class="weight-hist-row">
+        <span class="weight-hist-date">${dayStr}, ${dateStr}</span>
+        <span class="weight-hist-val">${e.val.toFixed(1)} kg</span>
+        <button class="weight-hist-del" onclick="showWeightDelConfirm('${e.date}')" title="Delete">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="weight-hist-confirm" id="wdel-${e.date}">
+        <span>Delete this entry?</span>
+        <button class="hdc-confirm" onclick="confirmWeightDelete('${e.date}')">Yes</button>
+        <button class="hdc-cancel"  onclick="cancelWeightDelete('${e.date}')">Cancel</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function showWeightDelConfirm(dateKey) {
+  document.querySelectorAll('.weight-hist-confirm.show').forEach(el => el.classList.remove('show'));
+  document.getElementById('wdel-' + dateKey).classList.add('show');
+}
+function cancelWeightDelete(dateKey) {
+  document.getElementById('wdel-' + dateKey).classList.remove('show');
+}
+function confirmWeightDelete(dateKey) {
+  const data = loadObj(KEYS.weight, {});
+  delete data[dateKey];
+  save(KEYS.weight, data);
+  renderWeightScreen();
+}
+
+// ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
 showScreen('screen-workouts');
@@ -2024,7 +2441,7 @@ document.querySelectorAll('.screen').forEach(el => {
   el.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 });
 document.getElementById('hiit-verlauf-list').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
-document.getElementById('hiit-prog-scroll').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+document.getElementById('wk-sheet-exlist').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 
 // Unlock audio context on first user interaction
 document.body.addEventListener('touchstart', () => getAudioCtx(), { once: true, passive: true });
