@@ -419,6 +419,92 @@
     color: var(--text-muted); font-size: 13px; text-align: center; padding: 20px 0;
   }
 
+  /* ── HIIT PROGRAMMES ── */
+  .hiit-prog-section { padding: 0 0 12px; }
+  .hiit-prog-header {
+    font-size: 11px; font-weight: 700; color: var(--text-sec);
+    letter-spacing: 1px; text-transform: uppercase;
+    padding: 4px 16px 10px;
+  }
+  .hiit-prog-scroll {
+    display: flex; gap: 10px;
+    overflow-x: auto; padding: 0 16px 2px;
+    scrollbar-width: none;
+  }
+  .hiit-prog-scroll::-webkit-scrollbar { display: none; }
+  .hiit-prog-empty {
+    color: var(--text-muted); font-size: 13px; padding: 4px 0 10px;
+  }
+  .prog-card {
+    min-width: 140px; background: var(--card); border-radius: var(--radius);
+    padding: 12px 12px 40px; flex-shrink: 0; cursor: pointer;
+    position: relative; user-select: none;
+    transition: background var(--transition);
+    -webkit-touch-callout: none;
+  }
+  .prog-card:active { background: #202020; }
+  .prog-card-name {
+    font-size: 14px; font-weight: 500; color: var(--text);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    margin-bottom: 5px;
+  }
+  .prog-card-meta { font-size: 12px; color: var(--text-sec); line-height: 1.6; }
+  .prog-card-play {
+    position: absolute; bottom: 10px; right: 10px;
+    width: 30px; height: 30px; border-radius: 50%;
+    background: var(--accent); border: none; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform var(--transition);
+  }
+  .prog-card-play:active { transform: scale(0.88); }
+  .hiit-prog-new-btn {
+    display: block; width: 100%;
+    background: transparent; border: 2px solid var(--text-sec);
+    color: var(--text-sec); border-radius: 999px; padding: 10px 20px;
+    font-size: 13px; font-weight: 700; cursor: pointer;
+    transition: color var(--transition), border-color var(--transition);
+  }
+  .hiit-prog-new-btn:active { transform: scale(0.97); }
+
+  /* ── BOTTOM SHEET ── */
+  .sheet-backdrop {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.65);
+    z-index: 400; display: none;
+  }
+  .bottom-sheet {
+    position: fixed; bottom: 0; left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 100%; max-width: 480px; z-index: 401;
+    background: var(--elevated); border-radius: 16px 16px 0 0;
+    padding: 20px 16px 36px;
+    transition: transform 280ms cubic-bezier(0.32,0.72,0,1);
+    display: none;
+  }
+  .bottom-sheet.open { transform: translateX(-50%) translateY(0); }
+  .sheet-drag-pill {
+    width: 36px; height: 4px; background: var(--text-muted);
+    border-radius: 2px; margin: 0 auto 16px;
+  }
+  .sheet-title {
+    font-size: 15px; font-weight: 700; color: var(--text);
+    text-align: center; margin-bottom: 16px; padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .sheet-btn {
+    display: block; width: 100%; padding: 14px;
+    border-radius: 999px; border: none; cursor: pointer;
+    font-size: 15px; font-weight: 600; margin-bottom: 8px;
+    background: var(--input); color: var(--text);
+    transition: opacity var(--transition);
+  }
+  .sheet-btn:active { opacity: 0.65; }
+  .sheet-btn-danger { background: rgba(232,64,64,0.12); color: var(--accent-red); }
+  .sheet-btn-cancel { background: transparent; color: var(--text-sec); margin-top: 2px; }
+  .sheet-confirm-text {
+    font-size: 14px; color: var(--text-sec); text-align: center; margin-bottom: 14px;
+  }
+  .sheet-form { display: flex; flex-direction: column; gap: 14px; }
+
   /* ── SCROLLBAR ── */
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
@@ -503,6 +589,13 @@
   <div id="screen-hiit" class="screen">
     <div id="hiit-config-view">
       <div class="topbar"><h1>HIIT Timer</h1></div>
+      <div class="hiit-prog-section">
+        <div class="hiit-prog-header">My Programmes</div>
+        <div class="hiit-prog-scroll" id="hiit-prog-scroll"></div>
+        <div style="padding:8px 16px 0;">
+          <button class="hiit-prog-new-btn" onclick="openProgrammeForm(null)">+ New Programme</button>
+        </div>
+      </div>
       <div class="hiit-config">
         <div class="hiit-inputs-row">
           <div class="hiit-input-group">
@@ -547,6 +640,57 @@
     </div>
   </div>
 
+  <!-- ══════════════════════════════ PROGRAMME ACTION SHEET ══════════════════════════════ -->
+  <div class="sheet-backdrop" id="prog-sheet-backdrop" onclick="closeProgrammeActionSheet()"></div>
+  <div class="bottom-sheet" id="prog-action-sheet">
+    <div class="sheet-drag-pill"></div>
+    <div class="sheet-title" id="prog-sheet-name"></div>
+    <div id="prog-sheet-normal">
+      <button class="sheet-btn" onclick="editProgrammeFromSheet()">Bearbeiten</button>
+      <button class="sheet-btn sheet-btn-danger" onclick="showProgDeleteConfirm()">Löschen</button>
+      <button class="sheet-btn sheet-btn-cancel" onclick="closeProgrammeActionSheet()">Abbrechen</button>
+    </div>
+    <div id="prog-sheet-confirm" style="display:none;">
+      <div class="sheet-confirm-text">Programm wirklich löschen?</div>
+      <button class="sheet-btn sheet-btn-danger" onclick="confirmDeleteProgramme()">Ja, löschen</button>
+      <button class="sheet-btn sheet-btn-cancel" onclick="cancelProgDeleteConfirm()">Abbrechen</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ PROGRAMME FORM SHEET ══════════════════════════════ -->
+  <div class="sheet-backdrop" id="prog-form-backdrop" onclick="closeProgrammeForm()"></div>
+  <div class="bottom-sheet" id="prog-form-sheet">
+    <div class="sheet-drag-pill"></div>
+    <div class="sheet-title" id="prog-form-title">Neues Programm</div>
+    <div class="sheet-form">
+      <div class="input-group">
+        <label>Name</label>
+        <input type="text" id="prog-name-input" placeholder="z.B. Tabata" style="font-size:16px;">
+      </div>
+      <div class="hiit-inputs-row">
+        <div class="hiit-input-group">
+          <div class="hig-label">Runden</div>
+          <input type="number" id="prog-rounds" value="8" min="1" max="30" step="1">
+          <div class="hig-unit">Runden</div>
+        </div>
+        <div class="hiit-input-group">
+          <div class="hig-label">Belastung</div>
+          <input type="number" id="prog-work" value="40" min="10" max="300" step="30">
+          <div class="hig-unit">Sekunden</div>
+        </div>
+        <div class="hiit-input-group">
+          <div class="hig-label">Pause</div>
+          <input type="number" id="prog-rest" value="20" min="10" max="300" step="30">
+          <div class="hig-unit">Sekunden</div>
+        </div>
+      </div>
+      <div style="display:flex;gap:10px;">
+        <button class="btn btn-primary" style="flex:1;" onclick="saveProgramme()">Speichern</button>
+        <button class="btn btn-secondary" onclick="closeProgrammeForm()">Abbrechen</button>
+      </div>
+    </div>
+  </div>
+
   <!-- ══════════════════════════════ BOTTOM NAV ══════════════════════════════ -->
   <nav id="bottom-nav">
     <button class="nav-tab active" onclick="navTo('workouts')" id="nav-workouts">
@@ -572,7 +716,8 @@ const KEYS = {
   workouts:    'fittrack_workouts',
   history:     'fittrack_history',
   hiit:        'fittrack_hiit_config',
-  hiitHistory: 'fittrack_hiit_history'
+  hiitHistory:     'fittrack_hiit_history',
+  hiitProgrammes:  'fittrack_hiit_programmes'
 };
 
 function load(key)        { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
@@ -649,6 +794,7 @@ function navTo(tab) {
   } else {
     showScreen('screen-hiit');
     loadHIITConfig();
+    renderHIITProgrammes();
   }
 }
 
@@ -1360,6 +1506,162 @@ function confirmHIITHistDelete(id) {
 }
 
 // ═══════════════════════════════════════════════════
+//  HIIT PROGRAMMES
+// ═══════════════════════════════════════════════════
+let _activeProgrammeId = null;
+
+function renderHIITProgrammes() {
+  const scroll = document.getElementById('hiit-prog-scroll');
+  const progs = load(KEYS.hiitProgrammes);
+  if (!progs.length) {
+    scroll.innerHTML = '<div class="hiit-prog-empty">Noch keine Programme gespeichert.</div>';
+    return;
+  }
+  scroll.innerHTML = progs.map(p => `
+    <div class="prog-card" id="prog-card-${p.id}" data-id="${p.id}">
+      <div class="prog-card-name">${esc(p.name)}</div>
+      <div class="prog-card-meta">${p.rounds} Runden<br>${p.work}s&nbsp;/&nbsp;${p.rest}s</div>
+      <button class="prog-card-play" onclick="event.stopPropagation();startProgramme('${p.id}')" title="Starten">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="white"><path d="M8 5v14l11-7z"/></svg>
+      </button>
+    </div>
+  `).join('');
+  progs.forEach(p => {
+    addLongPress(document.getElementById('prog-card-' + p.id), () => openProgrammeActionSheet(p.id));
+  });
+}
+
+function addLongPress(el, cb) {
+  let timer = null;
+  let moved = false;
+  el.addEventListener('pointerdown', e => {
+    moved = false;
+    timer = setTimeout(() => { if (!moved) cb(); }, 500);
+  });
+  el.addEventListener('pointermove', () => { moved = true; clearTimeout(timer); });
+  el.addEventListener('pointerup',   () => clearTimeout(timer));
+  el.addEventListener('pointercancel', () => clearTimeout(timer));
+}
+
+function showSheet(backdropId, sheetId) {
+  const bd = document.getElementById(backdropId);
+  const sh = document.getElementById(sheetId);
+  bd.style.display = 'block';
+  sh.style.display = 'block';
+  requestAnimationFrame(() => sh.classList.add('open'));
+}
+
+function hideSheet(backdropId, sheetId) {
+  const bd = document.getElementById(backdropId);
+  const sh = document.getElementById(sheetId);
+  sh.classList.remove('open');
+  setTimeout(() => {
+    sh.style.display = 'none';
+    bd.style.display = 'none';
+  }, 300);
+}
+
+function openProgrammeActionSheet(id) {
+  _activeProgrammeId = id;
+  const progs = load(KEYS.hiitProgrammes);
+  const p = progs.find(x => x.id === id);
+  if (!p) return;
+  document.getElementById('prog-sheet-name').textContent = p.name;
+  document.getElementById('prog-sheet-normal').style.display = 'block';
+  document.getElementById('prog-sheet-confirm').style.display = 'none';
+  showSheet('prog-sheet-backdrop', 'prog-action-sheet');
+}
+
+function closeProgrammeActionSheet() {
+  hideSheet('prog-sheet-backdrop', 'prog-action-sheet');
+}
+
+function editProgrammeFromSheet() {
+  const id = _activeProgrammeId;
+  closeProgrammeActionSheet();
+  setTimeout(() => openProgrammeForm(id), 320);
+}
+
+function showProgDeleteConfirm() {
+  document.getElementById('prog-sheet-normal').style.display = 'none';
+  document.getElementById('prog-sheet-confirm').style.display = 'block';
+}
+
+function cancelProgDeleteConfirm() {
+  document.getElementById('prog-sheet-normal').style.display = 'block';
+  document.getElementById('prog-sheet-confirm').style.display = 'none';
+}
+
+function confirmDeleteProgramme() {
+  let progs = load(KEYS.hiitProgrammes);
+  progs = progs.filter(p => p.id !== _activeProgrammeId);
+  save(KEYS.hiitProgrammes, progs);
+  closeProgrammeActionSheet();
+  renderHIITProgrammes();
+}
+
+function openProgrammeForm(id) {
+  _activeProgrammeId = id;
+  if (id) {
+    const progs = load(KEYS.hiitProgrammes);
+    const p = progs.find(x => x.id === id);
+    if (p) {
+      document.getElementById('prog-form-title').textContent = 'Programm bearbeiten';
+      document.getElementById('prog-name-input').value = p.name;
+      document.getElementById('prog-rounds').value = p.rounds;
+      document.getElementById('prog-work').value   = p.work;
+      document.getElementById('prog-rest').value   = p.rest;
+    }
+  } else {
+    document.getElementById('prog-form-title').textContent = 'Neues Programm';
+    document.getElementById('prog-name-input').value = '';
+    document.getElementById('prog-rounds').value = 8;
+    document.getElementById('prog-work').value   = 40;
+    document.getElementById('prog-rest').value   = 20;
+  }
+  showSheet('prog-form-backdrop', 'prog-form-sheet');
+}
+
+function closeProgrammeForm() {
+  hideSheet('prog-form-backdrop', 'prog-form-sheet');
+}
+
+function saveProgramme() {
+  const name   = document.getElementById('prog-name-input').value.trim();
+  const rounds = Math.max(1,  parseInt(document.getElementById('prog-rounds').value) || 8);
+  const work   = Math.max(10, parseInt(document.getElementById('prog-work').value)   || 40);
+  const rest   = Math.max(10, parseInt(document.getElementById('prog-rest').value)   || 20);
+  if (!name) { document.getElementById('prog-name-input').focus(); return; }
+  const progs = load(KEYS.hiitProgrammes);
+  if (_activeProgrammeId) {
+    const idx = progs.findIndex(p => p.id === _activeProgrammeId);
+    if (idx >= 0) progs[idx] = { ...progs[idx], name, rounds, work, rest };
+  } else {
+    progs.push({ id: Date.now().toString(36), name, rounds, work, rest });
+  }
+  save(KEYS.hiitProgrammes, progs);
+  closeProgrammeForm();
+  renderHIITProgrammes();
+}
+
+function startProgramme(id) {
+  const progs = load(KEYS.hiitProgrammes);
+  const p = progs.find(x => x.id === id);
+  if (!p) return;
+  const rounds = p.rounds;
+  const work   = p.work;
+  const rest   = p.rest;
+  // Start HIIT without overwriting the last-used config
+  hiitState = { rounds, work, rest, currentRound:1, phase:'work', remaining:work,
+    phaseDuration:work, paused:false, done:false, startTime:Date.now() };
+  soundWorkStart(); renderHIITActive(); requestWakeLock();
+  document.getElementById('hiit-config-view').style.display = 'none';
+  document.getElementById('hiit-active-view').style.display = 'flex';
+  clearInterval(hiitInterval);
+  hiitInterval = setInterval(tickHIIT, 1000);
+}
+
+// ═══════════════════════════════════════════════════
 //  INIT
 // ═══════════════════════════════════════════════════
 showScreen('screen-workouts');
@@ -1367,6 +1669,7 @@ document.getElementById('bottom-nav').style.display = 'flex';
 renderWorkoutList();
 renderHistory();
 loadHIITConfig();
+renderHIITProgrammes();
 
 // Block all body/page scroll from touch swipe globally
 document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
@@ -1376,6 +1679,7 @@ document.querySelectorAll('.screen').forEach(el => {
   el.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 });
 document.getElementById('hiit-verlauf-list').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+document.getElementById('hiit-prog-scroll').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 
 // Unlock audio context on first user interaction
 document.body.addEventListener('touchstart', () => getAudioCtx(), { once: true, passive: true });
