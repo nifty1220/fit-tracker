@@ -509,6 +509,63 @@
   ::-webkit-scrollbar { width: 4px; }
   ::-webkit-scrollbar-track { background: transparent; }
   ::-webkit-scrollbar-thumb { background: var(--elevated); border-radius: 2px; }
+
+  /* ── ROUTINES ── */
+  .routine-card {
+    display: flex; align-items: flex-start; gap: 12px;
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin: 0 16px 10px;
+  }
+  .routine-card-info { flex: 1; min-width: 0; }
+  .routine-card-name { font-size: 16px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 4px; }
+  .routine-card-desc { font-size: 13px; color: var(--text-sec); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; margin-bottom: 6px; line-height: 1.4; }
+  .routine-card-count { font-size: 12px; color: var(--text-muted); }
+  .routine-card-actions { display: flex; gap: 2px; flex-shrink: 0; }
+  .routine-card-actions .btn-icon { color: var(--text-sec); }
+  .routine-card-actions .btn-icon:active { color: var(--accent); }
+  .routine-card-confirm { display: none; margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255,255,255,0.07); }
+  .routine-card-confirm.show { display: block; }
+  .routine-card-confirm p { font-size: 13px; color: var(--text-sec); margin-bottom: 8px; }
+  .routine-card-confirm-btns { display: flex; gap: 8px; }
+  .rtn-ex-row {
+    background: var(--elevated); border-radius: var(--radius);
+    padding: 12px; margin: 0 16px 8px;
+  }
+  .rtn-ex-header { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; }
+  .rtn-ex-note-input {
+    background: var(--input); border: none; border-radius: var(--radius);
+    color: var(--text-sec); font-size: 14px; padding: 8px 12px;
+    outline: none; width: 100%; margin-bottom: 10px;
+  }
+  .rtn-ex-note-input::placeholder { color: var(--text-muted); }
+  .rtn-ex-note-input:focus { background: #4a4a4a; }
+  .rtn-ex-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .rtn-detail-desc {
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin: 0 16px 16px;
+    color: var(--text-sec); font-size: 15px; line-height: 1.6;
+  }
+  .rtn-detail-card {
+    display: flex; align-items: flex-start; gap: 14px;
+    background: var(--card); border-radius: var(--radius);
+    padding: 16px; margin: 0 16px 8px;
+  }
+  .rtn-detail-step {
+    font-size: 28px; font-weight: 500; color: var(--text-muted);
+    flex-shrink: 0; line-height: 1; min-width: 32px;
+  }
+  .rtn-detail-body { flex: 1; min-width: 0; }
+  .rtn-detail-name { font-size: 16px; font-weight: 500; color: var(--text); margin-bottom: 4px; }
+  .rtn-detail-sets { font-size: 14px; color: var(--accent); font-weight: 600; }
+  .rtn-detail-note { font-size: 13px; color: var(--text-sec); font-style: italic; margin-top: 4px; }
+  textarea.rtn-desc-textarea {
+    background: var(--input); border: none; border-radius: var(--radius);
+    color: var(--text); font-size: 16px; padding: 12px 14px;
+    outline: none; width: 100%; resize: vertical; min-height: 80px;
+    font-family: inherit; line-height: 1.5;
+  }
+  textarea.rtn-desc-textarea:focus { background: #4a4a4a; }
+  textarea.rtn-desc-textarea::placeholder { color: var(--text-muted); }
 </style>
 </head>
 <body>
@@ -640,6 +697,56 @@
     </div>
   </div>
 
+  <!-- ══════════════════════════════ ROUTINES LIST SCREEN ══════════════════════════════ -->
+  <div id="screen-routines" class="screen">
+    <div class="topbar">
+      <h1>My Routines</h1>
+    </div>
+    <div style="padding: 0 16px 14px;">
+      <button class="btn btn-primary" style="width:100%;" onclick="showRoutineBuilder(null)">+ New Routine</button>
+    </div>
+    <div id="routine-list"></div>
+  </div>
+
+  <!-- ══════════════════════════════ ROUTINE BUILDER SCREEN ══════════════════════════════ -->
+  <div id="screen-routine-builder" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="cancelRoutineBuilder()">&#8592;</button>
+      <h1 id="routine-builder-title">New Routine</h1>
+    </div>
+    <div style="padding: 0 16px 12px; display:flex; flex-direction:column; gap:12px;">
+      <div class="input-group">
+        <label>Name</label>
+        <input type="text" id="routine-name-input" placeholder="e.g. Morning Warmup" style="font-size:16px;">
+      </div>
+      <div class="input-group">
+        <label>Description</label>
+        <textarea id="routine-desc-input" class="rtn-desc-textarea" rows="3" placeholder="Short description of this routine — what is it for, how long does it take, any notes…"></textarea>
+      </div>
+    </div>
+    <div id="routine-exercise-list"></div>
+    <div style="padding: 4px 16px 16px;">
+      <button class="btn btn-secondary" style="width:100%;" onclick="addRoutineExRow()">+ Add Exercise</button>
+    </div>
+    <div style="padding: 0 16px 16px; display:flex; gap:10px;">
+      <button class="btn btn-primary" style="flex:1;" onclick="saveRoutine()">Save Routine</button>
+      <button class="btn btn-secondary" onclick="cancelRoutineBuilder()">Cancel</button>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ ROUTINE DETAIL SCREEN ══════════════════════════════ -->
+  <div id="screen-routine-detail" class="screen">
+    <div class="topbar">
+      <button class="back-btn" onclick="navTo('routines')">&#8592;</button>
+      <div style="flex:1; min-width:0;">
+        <h1 id="rtn-detail-name" style="font-size:20px; font-weight:500;"></h1>
+        <div id="rtn-detail-count" style="font-size:13px; color:var(--text-sec); margin-top:2px;"></div>
+      </div>
+    </div>
+    <div id="rtn-detail-desc-block"></div>
+    <div id="rtn-detail-list"></div>
+  </div>
+
   <!-- ══════════════════════════════ PROGRAMME ACTION SHEET ══════════════════════════════ -->
   <div class="sheet-backdrop" id="prog-sheet-backdrop" onclick="closeProgrammeActionSheet()"></div>
   <div class="bottom-sheet" id="prog-action-sheet">
@@ -705,6 +812,13 @@
       </svg>
       HIIT
     </button>
+    <button class="nav-tab" onclick="navTo('routines')" id="nav-routines">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
+        <polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/>
+      </svg>
+      Routines
+    </button>
   </nav>
 </div>
 
@@ -717,7 +831,8 @@ const KEYS = {
   history:     'fittrack_history',
   hiit:        'fittrack_hiit_config',
   hiitHistory:     'fittrack_hiit_history',
-  hiitProgrammes:  'fittrack_hiit_programmes'
+  hiitProgrammes:  'fittrack_hiit_programmes',
+  routines:        'fittrack_routines'
 };
 
 function load(key)        { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
@@ -786,11 +901,15 @@ let currentNav = 'workouts';
 function navTo(tab) {
   currentNav = tab;
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('nav-' + tab).classList.add('active');
+  const navEl = document.getElementById('nav-' + tab);
+  if (navEl) navEl.classList.add('active');
   if (tab === 'workouts') {
     showScreen('screen-workouts');
     renderWorkoutList();
     renderHistory();
+  } else if (tab === 'routines') {
+    showScreen('screen-routines');
+    renderRoutineList();
   } else {
     showScreen('screen-hiit');
     loadHIITConfig();
@@ -801,7 +920,7 @@ function navTo(tab) {
 function showScreen(id) {
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  const isMain = id === 'screen-workouts' || id === 'screen-hiit';
+  const isMain = id === 'screen-workouts' || id === 'screen-hiit' || id === 'screen-routines';
   document.getElementById('bottom-nav').style.display = isMain ? 'flex' : 'none';
 }
 
@@ -1503,6 +1622,232 @@ function confirmHIITHistDelete(id) {
   hist = hist.filter(h => h.id !== id);
   save(KEYS.hiitHistory, hist);
   renderHIITVerlauf();
+}
+
+// ═══════════════════════════════════════════════════
+//  ROUTINES
+// ═══════════════════════════════════════════════════
+let editingRoutineId = null;
+
+function renderRoutineList() {
+  const el = document.getElementById('routine-list');
+  const routines = load(KEYS.routines);
+  if (!routines.length) {
+    el.innerHTML = `<div class="empty-state"><p>No routines yet.<br>Create your first one.</p></div>`;
+    return;
+  }
+  el.innerHTML = routines.map(r => `
+    <div class="routine-card" id="rcard-${r.id}">
+      <div class="routine-card-info">
+        <div class="routine-card-name">${esc(r.name)}</div>
+        ${r.description ? `<div class="routine-card-desc">${esc(r.description)}</div>` : ''}
+        <div class="routine-card-count">${r.exercises.length} exercise${r.exercises.length !== 1 ? 's' : ''}</div>
+        <div class="routine-card-confirm" id="rdel-confirm-${r.id}">
+          <p>Really delete this routine?</p>
+          <div class="routine-card-confirm-btns">
+            <button class="btn btn-danger btn-sm" onclick="confirmDeleteRoutine('${r.id}')">Yes, delete</button>
+            <button class="btn btn-secondary btn-sm" onclick="cancelDeleteRoutine('${r.id}')">Cancel</button>
+          </div>
+        </div>
+      </div>
+      <div class="routine-card-actions">
+        <button class="btn-icon" onclick="showRoutineDetail('${r.id}')" title="View">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
+          </svg>
+        </button>
+        <button class="btn-icon" onclick="showRoutineBuilder('${r.id}')" title="Edit">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+          </svg>
+        </button>
+        <button class="btn-icon" style="color:var(--accent-red);" onclick="showDeleteRoutineConfirm('${r.id}')" title="Delete">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  `).join('');
+}
+
+function showDeleteRoutineConfirm(id) {
+  document.querySelectorAll('.routine-card-confirm.show').forEach(el => el.classList.remove('show'));
+  document.getElementById('rdel-confirm-' + id).classList.add('show');
+}
+
+function cancelDeleteRoutine(id) {
+  document.getElementById('rdel-confirm-' + id).classList.remove('show');
+}
+
+function confirmDeleteRoutine(id) {
+  let routines = load(KEYS.routines);
+  routines = routines.filter(r => r.id !== id);
+  save(KEYS.routines, routines);
+  renderRoutineList();
+}
+
+function showRoutineBuilder(id) {
+  editingRoutineId = id;
+  const listEl = document.getElementById('routine-exercise-list');
+  listEl.innerHTML = '';
+
+  if (id) {
+    const routines = load(KEYS.routines);
+    const r = routines.find(x => x.id === id);
+    if (r) {
+      document.getElementById('routine-builder-title').textContent = 'Edit Routine';
+      document.getElementById('routine-name-input').value = r.name;
+      document.getElementById('routine-desc-input').value = r.description || '';
+      r.exercises.forEach(ex => addRoutineExRow(ex));
+    }
+  } else {
+    document.getElementById('routine-builder-title').textContent = 'New Routine';
+    document.getElementById('routine-name-input').value = '';
+    document.getElementById('routine-desc-input').value = '';
+    addRoutineExRow();
+  }
+
+  showScreen('screen-routine-builder');
+  enableDragReorder(listEl);
+}
+
+function cancelRoutineBuilder() {
+  showScreen('screen-routines');
+  renderRoutineList();
+}
+
+function addRoutineExRow(ex = null) {
+  const listEl = document.getElementById('routine-exercise-list');
+
+  const insertLine = document.createElement('div');
+  insertLine.className = 'drag-insert-above';
+
+  const row = document.createElement('div');
+  row.className = 'exercise-row rtn-ex-row';
+
+  const header = document.createElement('div');
+  header.className = 'exercise-row-header rtn-ex-header';
+
+  const handle = document.createElement('span');
+  handle.className = 'drag-handle';
+  handle.textContent = '⠿';
+  handle.title = 'Drag to reorder';
+
+  const nameInput = document.createElement('input');
+  nameInput.type = 'text';
+  nameInput.placeholder = 'Exercise name';
+  nameInput.className = 'rtn-ex-name';
+  nameInput.value = ex ? esc(ex.name) : '';
+  nameInput.style.flex = '1';
+  nameInput.style.fontSize = '16px';
+
+  const delBtn = document.createElement('button');
+  delBtn.className = 'btn-icon';
+  delBtn.style.color = 'var(--accent-red)';
+  delBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>`;
+  delBtn.onclick = () => { insertLine.remove(); row.remove(); };
+
+  header.appendChild(handle);
+  header.appendChild(nameInput);
+  header.appendChild(delBtn);
+
+  const noteInput = document.createElement('input');
+  noteInput.type = 'text';
+  noteInput.placeholder = 'Optional note, e.g. keep back straight';
+  noteInput.className = 'rtn-ex-note-input';
+  noteInput.value = ex ? (ex.note || '') : '';
+  noteInput.style.fontSize = '14px';
+
+  const fields = document.createElement('div');
+  fields.className = 'rtn-ex-fields';
+
+  function makeRtnInputGroup(label, cls, min, max, defVal) {
+    const group = document.createElement('div');
+    group.className = 'ex-input-group';
+    const lbl = document.createElement('div');
+    lbl.className = 'eig-label';
+    lbl.textContent = label;
+    const inp = document.createElement('input');
+    inp.type = 'number'; inp.className = cls;
+    inp.min = min; inp.max = max; inp.step = 1; inp.value = defVal;
+    inp.style.fontSize = '16px';
+    group.appendChild(lbl);
+    group.appendChild(inp);
+    return group;
+  }
+
+  fields.appendChild(makeRtnInputGroup('Sets', 'rtn-ex-sets', 1, 20, ex ? ex.sets : 3));
+  fields.appendChild(makeRtnInputGroup('Reps', 'rtn-ex-reps', 1, 50, ex ? ex.reps : 10));
+
+  row.appendChild(header);
+  row.appendChild(noteInput);
+  row.appendChild(fields);
+
+  listEl.appendChild(insertLine);
+  listEl.appendChild(row);
+}
+
+function saveRoutine() {
+  const name = document.getElementById('routine-name-input').value.trim();
+  if (!name) { document.getElementById('routine-name-input').focus(); return; }
+  const description = document.getElementById('routine-desc-input').value.trim();
+
+  const rows = [...document.querySelectorAll('#routine-exercise-list .exercise-row')];
+  const exercises = [];
+  rows.forEach(row => {
+    const n = row.querySelector('.rtn-ex-name').value.trim();
+    if (!n) return;
+    exercises.push({
+      id:   Date.now().toString(36) + Math.random().toString(36).slice(2),
+      name: n,
+      note: row.querySelector('.rtn-ex-note-input').value.trim(),
+      sets: Math.max(1, parseInt(row.querySelector('.rtn-ex-sets').value) || 1),
+      reps: Math.max(1, parseInt(row.querySelector('.rtn-ex-reps').value) || 1)
+    });
+  });
+
+  if (!exercises.length) { return; }
+
+  const routines = load(KEYS.routines);
+  if (editingRoutineId) {
+    const idx = routines.findIndex(r => r.id === editingRoutineId);
+    if (idx >= 0) routines[idx] = { ...routines[idx], name, description, exercises };
+  } else {
+    routines.push({ id: Date.now().toString(36), name, description, exercises });
+  }
+  save(KEYS.routines, routines);
+  showScreen('screen-routines');
+  renderRoutineList();
+}
+
+function showRoutineDetail(id) {
+  const routines = load(KEYS.routines);
+  const r = routines.find(x => x.id === id);
+  if (!r) return;
+
+  document.getElementById('rtn-detail-name').textContent = r.name;
+  document.getElementById('rtn-detail-count').textContent = r.exercises.length + ' exercise' + (r.exercises.length !== 1 ? 's' : '');
+
+  const descBlock = document.getElementById('rtn-detail-desc-block');
+  descBlock.innerHTML = r.description
+    ? `<div class="rtn-detail-desc">${esc(r.description).replace(/\n/g,'<br>')}</div>`
+    : '';
+
+  document.getElementById('rtn-detail-list').innerHTML = r.exercises.map((ex, i) => {
+    const step = String(i + 1).padStart(2, '0');
+    return `<div class="rtn-detail-card">
+      <div class="rtn-detail-step">${step}</div>
+      <div class="rtn-detail-body">
+        <div class="rtn-detail-name">${esc(ex.name)}</div>
+        <div class="rtn-detail-sets">${ex.sets} × ${ex.reps}</div>
+        ${ex.note ? `<div class="rtn-detail-note">${esc(ex.note)}</div>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+
+  showScreen('screen-routine-detail');
 }
 
 // ═══════════════════════════════════════════════════
