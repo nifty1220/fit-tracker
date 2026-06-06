@@ -775,18 +775,16 @@
     <div id="hiit-config-view">
       <div class="topbar">
         <h1>HIIT Timer</h1>
-        <button class="btn btn-secondary btn-sm" id="hiit-verlauf-btn" onclick="toggleHIITVerlauf(this)">Verlauf</button>
+        <button class="btn btn-primary btn-sm" onclick="openProgrammeForm(null)">+ Neu</button>
       </div>
-      <div id="hiit-main-view">
-        <div class="section-header">
-          <h2 style="font-size:11px;font-weight:700;color:var(--text-sec);letter-spacing:1px;text-transform:uppercase;">Meine Programme</h2>
-        </div>
+      <div class="sub-tabs">
+        <button class="sub-tab active" onclick="switchHIITTab('list', this)">Programme</button>
+        <button class="sub-tab" onclick="switchHIITTab('history', this)">Verlauf</button>
+      </div>
+      <div id="hiit-prog-tab">
         <div id="hiit-prog-list"></div>
-        <div style="padding:8px 16px 16px;">
-          <button class="hiit-prog-new-btn" onclick="openProgrammeForm(null)">+ Neues Programm</button>
-        </div>
       </div>
-      <div id="hiit-verlauf-view" style="display:none;">
+      <div id="hiit-verlauf-tab" style="display:none;">
         <div class="hiit-verlauf-list open" id="hiit-verlauf-list"></div>
       </div>
     </div>
@@ -1103,13 +1101,10 @@ function navTo(tab) {
   } else {
     showScreen('screen-hiit');
     renderHIITProgrammes();
-    // Reset Verlauf toggle to programme list view
-    if (_hiitVerlaufOpen) {
-      _hiitVerlaufOpen = false;
-      document.getElementById('hiit-main-view').style.display    = 'block';
-      document.getElementById('hiit-verlauf-view').style.display = 'none';
-      document.getElementById('hiit-verlauf-btn').textContent    = 'Verlauf';
-    }
+    // Reset to Programme sub-tab
+    document.querySelectorAll('#hiit-config-view .sub-tab').forEach((t, i) => t.classList.toggle('active', i === 0));
+    document.getElementById('hiit-prog-tab').style.display    = 'block';
+    document.getElementById('hiit-verlauf-tab').style.display = 'none';
   }
 }
 
@@ -1529,7 +1524,7 @@ function endWorkout() {
   navTo('workouts');
   renderWorkoutList();
   renderHistory();
-  setTimeout(() => switchWorkoutTab('history', document.querySelectorAll('.sub-tab')[1]), 100);
+  setTimeout(() => switchWorkoutTab('history', document.querySelectorAll('#screen-workouts .sub-tab')[1]), 100);
 }
 
 function formatTime(secs) {
@@ -1658,10 +1653,18 @@ function toggleDayEntryDetail(id, btn) {
 }
 
 function switchWorkoutTab(tab, btn) {
-  document.querySelectorAll('.sub-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('#screen-workouts .sub-tab').forEach(t => t.classList.remove('active'));
   btn.classList.add('active');
   document.getElementById('workout-list-tab').style.display   = tab === 'list'    ? 'block' : 'none';
   document.getElementById('workout-history-tab').style.display = tab === 'history' ? 'block' : 'none';
+}
+
+function switchHIITTab(tab, btn) {
+  document.querySelectorAll('#hiit-config-view .sub-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('hiit-prog-tab').style.display    = tab === 'list'    ? 'block' : 'none';
+  document.getElementById('hiit-verlauf-tab').style.display = tab === 'history' ? 'block' : 'none';
+  if (tab === 'history') renderHIITVerlauf();
 }
 
 // ═══════════════════════════════════════════════════
@@ -1805,15 +1808,6 @@ function saveHIITHistory(s, roundsDone) {
 let _hiitCalYear = new Date().getFullYear();
 let _hiitCalMonth = new Date().getMonth();
 
-let _hiitVerlaufOpen = false;
-
-function toggleHIITVerlauf(btn) {
-  _hiitVerlaufOpen = !_hiitVerlaufOpen;
-  document.getElementById('hiit-main-view').style.display   = _hiitVerlaufOpen ? 'none' : 'block';
-  document.getElementById('hiit-verlauf-view').style.display = _hiitVerlaufOpen ? 'block' : 'none';
-  btn.textContent = _hiitVerlaufOpen ? 'Programme' : 'Verlauf';
-  if (_hiitVerlaufOpen) renderHIITVerlauf();
-}
 
 function renderHIITVerlauf() {
   const list = document.getElementById('hiit-verlauf-list');
