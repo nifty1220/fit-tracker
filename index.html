@@ -693,7 +693,7 @@
   .weight-goal-input::-webkit-outer-spin-button { -webkit-appearance:none; }
   .weight-goal-unit { font-size:13px; color:var(--text-sec); }
   .weight-goal-hint { font-size:13px; color:var(--text-muted); text-align:center; padding:0 16px 8px; }
-  .weight-hist-scroll { max-height:280px; overflow-y:auto; }
+  /* weight-hist-scroll removed — history scrolls with parent screen */
 </style>
 </head>
 <body>
@@ -773,44 +773,21 @@
   <!-- ══════════════════════════════ HIIT SCREEN ══════════════════════════════ -->
   <div id="screen-hiit" class="screen">
     <div id="hiit-config-view">
-      <div class="topbar"><h1>HIIT Timer</h1></div>
-      <div class="hiit-prog-section">
-        <div class="hiit-prog-header">Meine Programme</div>
+      <div class="topbar">
+        <h1>HIIT Timer</h1>
+        <button class="btn btn-secondary btn-sm" id="hiit-verlauf-btn" onclick="toggleHIITVerlauf(this)">Verlauf</button>
+      </div>
+      <div id="hiit-main-view">
+        <div class="section-header">
+          <h2 style="font-size:11px;font-weight:700;color:var(--text-sec);letter-spacing:1px;text-transform:uppercase;">Meine Programme</h2>
+        </div>
         <div id="hiit-prog-list"></div>
-        <div style="padding:8px 16px 4px;">
+        <div style="padding:8px 16px 16px;">
           <button class="hiit-prog-new-btn" onclick="openProgrammeForm(null)">+ Neues Programm</button>
         </div>
       </div>
-      <div class="hiit-config">
-        <div class="hiit-inputs-row">
-          <div class="hiit-input-group">
-            <div class="hig-label">Runden</div>
-            <input type="number" id="hiit-rounds" value="8" min="1" max="30" step="1">
-            <div class="hig-unit">Runden</div>
-          </div>
-          <div class="hiit-input-group">
-            <div class="hig-label">Belastung</div>
-            <input type="number" id="hiit-work" value="40" min="10" max="300" step="30">
-            <div class="hig-unit">Sekunden</div>
-          </div>
-          <div class="hiit-input-group">
-            <div class="hig-label">Pause</div>
-            <input type="number" id="hiit-rest" value="20" min="10" max="300" step="30">
-            <div class="hig-unit">Sekunden</div>
-          </div>
-        </div>
-        <div style="display:flex; justify-content:center; margin:4px 0 8px;">
-          <button class="btn btn-primary" onclick="startHIIT()">
-            <svg viewBox="0 0 24 24" width="18" height="18" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-            Starten
-          </button>
-        </div>
-      </div>
-      <div class="hiit-verlauf-section">
-        <div style="display:flex; justify-content:center; margin:4px 0;">
-          <button class="hiit-verlauf-toggle" style="width:auto;" onclick="toggleHIITVerlauf(this)">Verlauf anzeigen</button>
-        </div>
-        <div class="hiit-verlauf-list" id="hiit-verlauf-list"></div>
+      <div id="hiit-verlauf-view" style="display:none;">
+        <div class="hiit-verlauf-list open" id="hiit-verlauf-list"></div>
       </div>
     </div>
     <div id="hiit-active-view" style="display:none;flex-direction:column;flex:1;">
@@ -909,9 +886,7 @@
       <button class="weight-filter-btn active" onclick="setWeightFilter('All', this)">Alle</button>
     </div>
     <div class="weight-section-header">Einträge</div>
-    <div class="weight-hist-scroll" id="weight-hist-scroll">
-      <div id="weight-hist-list"></div>
-    </div>
+    <div id="weight-hist-list"></div>
   </div>
 
   <!-- ══════════════════════════════ WORKOUT DAY DETAIL SHEET ══════════════════════════════ -->
@@ -1127,8 +1102,14 @@ function navTo(tab) {
     renderWeightScreen();
   } else {
     showScreen('screen-hiit');
-    loadHIITConfig();
     renderHIITProgrammes();
+    // Reset Verlauf toggle to programme list view
+    if (_hiitVerlaufOpen) {
+      _hiitVerlaufOpen = false;
+      document.getElementById('hiit-main-view').style.display    = 'block';
+      document.getElementById('hiit-verlauf-view').style.display = 'none';
+      document.getElementById('hiit-verlauf-btn').textContent    = 'Verlauf';
+    }
   }
 }
 
@@ -1824,16 +1805,18 @@ function saveHIITHistory(s, roundsDone) {
 let _hiitCalYear = new Date().getFullYear();
 let _hiitCalMonth = new Date().getMonth();
 
+let _hiitVerlaufOpen = false;
+
 function toggleHIITVerlauf(btn) {
-  const list = document.getElementById('hiit-verlauf-list');
-  const open = list.classList.toggle('open');
-  btn.textContent = open ? 'Verlauf ausblenden' : 'Verlauf anzeigen';
-  if (open) renderHIITVerlauf();
+  _hiitVerlaufOpen = !_hiitVerlaufOpen;
+  document.getElementById('hiit-main-view').style.display   = _hiitVerlaufOpen ? 'none' : 'block';
+  document.getElementById('hiit-verlauf-view').style.display = _hiitVerlaufOpen ? 'block' : 'none';
+  btn.textContent = _hiitVerlaufOpen ? 'Programme' : 'Verlauf';
+  if (_hiitVerlaufOpen) renderHIITVerlauf();
 }
 
 function renderHIITVerlauf() {
   const list = document.getElementById('hiit-verlauf-list');
-  if (!list.classList.contains('open')) return;
   const hist = load(KEYS.hiitHistory);
   const byDay = {};
   hist.forEach(h => {
@@ -2639,7 +2622,6 @@ showScreen('screen-workouts');
 document.getElementById('bottom-nav').style.display = 'flex';
 renderWorkoutList();
 renderHistory();
-loadHIITConfig();
 renderHIITProgrammes();
 
 // Block all body/page scroll from touch swipe globally
@@ -2649,9 +2631,9 @@ document.addEventListener('touchmove', e => e.preventDefault(), { passive: false
 document.querySelectorAll('.screen').forEach(el => {
   el.addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 });
-document.getElementById('hiit-verlauf-list').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+// hiit verlauf list scrolls with the screen — no separate listener needed
 document.getElementById('wk-sheet-exlist').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
-document.getElementById('weight-hist-scroll').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+// weight history scrolls with the main screen — no separate listener needed
 document.getElementById('wk-day-sheet').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 document.getElementById('hiit-day-sheet').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 
