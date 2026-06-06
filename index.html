@@ -630,6 +630,70 @@
     border-bottom:1px solid #1a1a1a;
   }
   .weight-hist-confirm.show { display:flex; }
+
+  /* ── CALENDAR HISTORY ── */
+  .cal-nav { display:flex; align-items:center; justify-content:space-between; padding:8px 16px 4px; }
+  .cal-title { font-size:15px; font-weight:600; color:var(--text); }
+  .cal-nav-btn { background:none; border:none; color:var(--text-sec); font-size:22px; cursor:pointer; padding:4px 10px; line-height:1; }
+  .cal-nav-btn:active { color:var(--text); }
+  .cal-grid { padding:0 16px 8px; }
+  .cal-weekdays { display:grid; grid-template-columns:repeat(7,1fr); margin-bottom:4px; }
+  .cal-wd { font-size:11px; color:var(--text-muted); text-align:center; padding:4px 0; font-weight:600; }
+  .cal-days { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+  .cal-day { display:flex; align-items:center; justify-content:center; height:38px; }
+  .cal-day-num {
+    width:30px; height:30px; display:flex; align-items:center; justify-content:center;
+    border-radius:50%; font-size:13px; color:var(--text-sec); cursor:pointer;
+    transition:background var(--transition);
+  }
+  .cal-day.other-month .cal-day-num { color:var(--text-muted); }
+  .cal-day.today .cal-day-num { background:#282828; color:var(--text); }
+  .cal-day.has-session .cal-day-num { background:var(--accent); color:#000; font-weight:700; }
+  .cal-legend { display:flex; align-items:center; gap:8px; padding:2px 16px 14px; font-size:12px; color:var(--text-muted); }
+  .cal-legend-dot { width:9px; height:9px; border-radius:50%; background:var(--accent); flex-shrink:0; }
+
+  /* ── DAY DETAIL SHEET ── */
+  .day-sheet-backdrop { position:fixed; inset:0; background:rgba(0,0,0,0.7); z-index:300; display:none; }
+  .day-detail-sheet {
+    position:fixed; bottom:0; left:50%; transform:translateX(-50%) translateY(100%);
+    width:100%; max-width:480px; z-index:301;
+    background:#181818; border-radius:16px 16px 0 0; padding:20px 20px 36px;
+    transition:transform 300ms ease; display:none; max-height:80vh; overflow-y:auto;
+  }
+  .day-detail-sheet.open { transform:translateX(-50%) translateY(0); }
+  .day-sheet-pill { width:40px; height:4px; background:#535353; border-radius:2px; margin:0 auto 14px; }
+  .day-sheet-date { font-size:15px; font-weight:600; color:var(--text-sec); text-align:center; margin-bottom:14px; }
+  .day-entry { background:#222; border-radius:var(--radius); padding:14px; margin-bottom:10px; }
+  .day-entry-name { font-size:16px; font-weight:500; color:var(--text); margin-bottom:6px; }
+  .day-entry-meta { font-size:13px; color:var(--text-sec); margin-bottom:8px; }
+  .day-entry-toggle { background:none; border:none; color:var(--accent); font-size:13px; cursor:pointer; padding:0; margin-bottom:6px; }
+  .day-entry-detail { display:none; }
+  .day-entry-detail.open { display:block; }
+  .day-entry-ex { font-size:13px; color:var(--text-sec); padding:5px 0; border-bottom:1px solid #282828; }
+  .day-entry-ex:last-child { border-bottom:none; }
+
+  /* ── ROUTINE CARD TAP ── */
+  .routine-card { cursor:pointer; transition:background var(--transition), transform 0.1s; }
+  .routine-card:active { transform:scale(0.98); background:#1e1e1e; }
+  .routine-card-chevron { color:var(--text-muted); font-size:18px; flex-shrink:0; align-self:center; margin-left:4px; }
+
+  /* ── WEIGHT GOAL ── */
+  .weight-goal-row {
+    display:flex; align-items:center; gap:10px; padding:0 16px 14px;
+    justify-content:center;
+  }
+  .weight-goal-label { font-size:13px; color:var(--text-sec); }
+  .weight-goal-input {
+    width:90px; text-align:center; font-size:16px; font-weight:600;
+    padding:10px 8px; background:var(--elevated); border:none;
+    border-radius:var(--radius); color:var(--text); outline:none;
+    -moz-appearance:textfield;
+  }
+  .weight-goal-input::-webkit-inner-spin-button,
+  .weight-goal-input::-webkit-outer-spin-button { -webkit-appearance:none; }
+  .weight-goal-unit { font-size:13px; color:var(--text-sec); }
+  .weight-goal-hint { font-size:13px; color:var(--text-muted); text-align:center; padding:0 16px 8px; }
+  .weight-hist-scroll { max-height:280px; overflow-y:auto; }
 </style>
 </head>
 <body>
@@ -711,10 +775,10 @@
     <div id="hiit-config-view">
       <div class="topbar"><h1>HIIT Timer</h1></div>
       <div class="hiit-prog-section">
-        <div class="hiit-prog-header">My Programmes</div>
+        <div class="hiit-prog-header">Meine Programme</div>
         <div id="hiit-prog-list"></div>
         <div style="padding:8px 16px 4px;">
-          <button class="hiit-prog-new-btn" onclick="openProgrammeForm(null)">+ New Programme</button>
+          <button class="hiit-prog-new-btn" onclick="openProgrammeForm(null)">+ Neues Programm</button>
         </div>
       </div>
       <div class="hiit-config">
@@ -768,10 +832,10 @@
   <!-- ══════════════════════════════ ROUTINES LIST SCREEN ══════════════════════════════ -->
   <div id="screen-routines" class="screen">
     <div class="topbar">
-      <h1>My Routines</h1>
+      <h1>Meine Routinen</h1>
     </div>
     <div style="padding: 0 16px 14px;">
-      <button class="btn btn-primary" style="width:100%;" onclick="showRoutineBuilder(null)">+ New Routine</button>
+      <button class="btn btn-primary" style="width:100%;" onclick="showRoutineBuilder(null)">+ Neue Routine</button>
     </div>
     <div id="routine-list"></div>
   </div>
@@ -780,25 +844,25 @@
   <div id="screen-routine-builder" class="screen">
     <div class="topbar">
       <button class="back-btn" onclick="cancelRoutineBuilder()">&#8592;</button>
-      <h1 id="routine-builder-title">New Routine</h1>
+      <h1 id="routine-builder-title">Neue Routine</h1>
     </div>
     <div style="padding: 0 16px 12px; display:flex; flex-direction:column; gap:12px;">
       <div class="input-group">
         <label>Name</label>
-        <input type="text" id="routine-name-input" placeholder="e.g. Morning Warmup" style="font-size:16px;">
+        <input type="text" id="routine-name-input" placeholder="z.B. Morgen-Warmup" style="font-size:16px;">
       </div>
       <div class="input-group">
-        <label>Description</label>
-        <textarea id="routine-desc-input" class="rtn-desc-textarea" rows="3" placeholder="Short description of this routine — what is it for, how long does it take, any notes…"></textarea>
+        <label>Beschreibung</label>
+        <textarea id="routine-desc-input" class="rtn-desc-textarea" rows="3" placeholder="Kurze Beschreibung — wofür, wie lang, Hinweise…"></textarea>
       </div>
     </div>
     <div id="routine-exercise-list"></div>
     <div style="padding: 4px 16px 16px;">
-      <button class="btn btn-secondary" style="width:100%;" onclick="addRoutineExRow()">+ Add Exercise</button>
+      <button class="btn btn-secondary" style="width:100%;" onclick="addRoutineExRow()">+ Übung hinzufügen</button>
     </div>
     <div style="padding: 0 16px 16px; display:flex; gap:10px;">
-      <button class="btn btn-primary" style="flex:1;" onclick="saveRoutine()">Save Routine</button>
-      <button class="btn btn-secondary" onclick="cancelRoutineBuilder()">Cancel</button>
+      <button class="btn btn-primary" style="flex:1;" onclick="saveRoutine()">Routine speichern</button>
+      <button class="btn btn-secondary" onclick="cancelRoutineBuilder()">Abbrechen</button>
     </div>
   </div>
 
@@ -817,28 +881,53 @@
 
   <!-- ══════════════════════════════ WEIGHT SCREEN ══════════════════════════════ -->
   <div id="screen-weight" class="screen">
-    <div class="topbar"><h1>Weight</h1></div>
+    <div class="topbar"><h1>Gewicht</h1></div>
     <div class="weight-entry-area">
       <div class="weight-display">
         <span class="weight-display-val" id="weight-display-val">--</span>
         <span class="weight-display-unit">kg</span>
       </div>
       <input type="number" id="weight-input" min="20" max="300" step="0.1" placeholder="0.0" style="font-size:16px;">
-      <button class="btn btn-primary" onclick="saveWeightEntry()">Save Today's Weight</button>
+      <button class="btn btn-primary" onclick="saveWeightEntry()">Heutiges Gewicht speichern</button>
       <div class="weight-save-hint" id="weight-save-hint"></div>
     </div>
-    <div class="weight-section-header">Progress</div>
+    <div class="weight-goal-row">
+      <span class="weight-goal-label">Zielgewicht</span>
+      <input type="number" id="weight-goal-input" class="weight-goal-input" min="20" max="300" step="0.1" placeholder="0.0">
+      <span class="weight-goal-unit">kg</span>
+      <button class="btn btn-secondary btn-sm" onclick="saveWeightGoal()">Setzen</button>
+    </div>
+    <div class="weight-goal-hint" id="weight-goal-hint"></div>
+    <div class="weight-section-header">Verlauf</div>
     <div class="weight-canvas-wrap">
       <canvas id="weight-canvas" height="220"></canvas>
     </div>
-    <div id="weight-canvas-empty" class="weight-canvas-empty" style="display:none;">Add at least 2 entries to see your progress.</div>
+    <div id="weight-canvas-empty" class="weight-canvas-empty" style="display:none;">Mindestens 2 Einträge nötig für den Verlauf.</div>
     <div class="weight-filter-row">
       <button class="weight-filter-btn" onclick="setWeightFilter('1M', this)">1M</button>
       <button class="weight-filter-btn" onclick="setWeightFilter('3M', this)">3M</button>
-      <button class="weight-filter-btn active" onclick="setWeightFilter('All', this)">All</button>
+      <button class="weight-filter-btn active" onclick="setWeightFilter('All', this)">Alle</button>
     </div>
-    <div class="weight-section-header">History</div>
-    <div id="weight-hist-list"></div>
+    <div class="weight-section-header">Einträge</div>
+    <div class="weight-hist-scroll" id="weight-hist-scroll">
+      <div id="weight-hist-list"></div>
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════ WORKOUT DAY DETAIL SHEET ══════════════════════════════ -->
+  <div class="day-sheet-backdrop" id="wk-day-backdrop" onclick="closeWkDaySheet()"></div>
+  <div class="day-detail-sheet" id="wk-day-sheet">
+    <div class="day-sheet-pill"></div>
+    <div class="day-sheet-date" id="wk-day-sheet-date"></div>
+    <div id="wk-day-sheet-content"></div>
+  </div>
+
+  <!-- ══════════════════════════════ HIIT DAY DETAIL SHEET ══════════════════════════════ -->
+  <div class="day-sheet-backdrop" id="hiit-day-backdrop" onclick="closeHiitDaySheet()"></div>
+  <div class="day-detail-sheet" id="hiit-day-sheet">
+    <div class="day-sheet-pill"></div>
+    <div class="day-sheet-date" id="hiit-day-sheet-date"></div>
+    <div id="hiit-day-sheet-content"></div>
   </div>
 
   <!-- ══════════════════════════════ WORKOUT DETAIL SHEET ══════════════════════════════ -->
@@ -850,10 +939,10 @@
     <div class="wk-sheet-divider"></div>
     <div class="wk-sheet-exlist" id="wk-sheet-exlist"></div>
     <div class="wk-sheet-actions">
-      <button class="btn btn-secondary" onclick="editFromWorkoutSheet()">Edit</button>
+      <button class="btn btn-secondary" onclick="editFromWorkoutSheet()">Bearbeiten</button>
       <button class="btn btn-primary" onclick="startFromWorkoutSheet()">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
-        Start Workout
+        Workout starten
       </button>
     </div>
   </div>
@@ -932,13 +1021,13 @@
         <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/>
         <polyline points="3 6 4 7 6 5"/><polyline points="3 12 4 13 6 11"/><polyline points="3 18 4 19 6 17"/>
       </svg>
-      Routines
+      Routinen
     </button>
     <button class="nav-tab" onclick="navTo('weight')" id="nav-weight">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M3 3h18v4H3z"/><path d="M3 7l2 14h14l2-14"/><path d="M9 11h6"/>
       </svg>
-      Weight
+      Gewicht
     </button>
   </nav>
 </div>
@@ -954,7 +1043,8 @@ const KEYS = {
   hiitHistory:     'fittrack_hiit_history',
   hiitProgrammes:  'fittrack_hiit_programmes',
   routines:        'fittrack_routines',
-  weight:          'fittrack_weight'
+  weight:          'fittrack_weight',
+  weightGoal:      'fittrack_weight_goal'
 };
 
 function load(key)        { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } }
@@ -1468,11 +1558,25 @@ function formatTime(secs) {
 }
 
 // ═══════════════════════════════════════════════════
-//  HISTORY
+//  HISTORY CALENDAR
 // ═══════════════════════════════════════════════════
+let _histCalYear = new Date().getFullYear();
+let _histCalMonth = new Date().getMonth(); // 0-based
+
+const DE_MONTHS = ['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+const DE_DAYS_SHORT = ['Mo','Di','Mi','Do','Fr','Sa','So'];
+
 function renderHistory() {
-  const history = load(KEYS.history).slice().reverse();
   const el = document.getElementById('history-list');
+  const history = load(KEYS.history);
+
+  // Build a map: dateStr (YYYY-MM-DD) -> array of sessions
+  const byDay = {};
+  history.forEach(h => {
+    const key = h.date.slice(0,10);
+    if (!byDay[key]) byDay[key] = [];
+    byDay[key].push(h);
+  });
 
   if (!history.length) {
     el.innerHTML = `<div class="empty-state">
@@ -1482,61 +1586,94 @@ function renderHistory() {
     return;
   }
 
-  el.innerHTML = history.map((h, i) => {
-    const date = new Date(h.date).toLocaleDateString('de-DE', {day:'2-digit',month:'2-digit',year:'numeric'});
-    const time = new Date(h.date).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+  el.innerHTML = buildCalendarHTML(_histCalYear, _histCalMonth, byDay, 'wk');
+}
+
+function buildCalendarHTML(year, month, byDay, prefix) {
+  const today = new Date();
+  const todayStr = today.getFullYear() + '-' + String(today.getMonth()+1).padStart(2,'0') + '-' + String(today.getDate()).padStart(2,'0');
+
+  // First day of month (0=Sun..6=Sat), convert to Mon-based (0=Mon..6=Sun)
+  const firstDate = new Date(year, month, 1);
+  let startDow = firstDate.getDay(); // 0=Sun
+  startDow = (startDow + 6) % 7;    // Mon-based
+  const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+  let cells = '';
+  // Leading blank cells
+  for (let i = 0; i < startDow; i++) {
+    cells += `<div class="cal-day other-month"><div class="cal-day-num"></div></div>`;
+  }
+  for (let d = 1; d <= daysInMonth; d++) {
+    const key = year + '-' + String(month+1).padStart(2,'0') + '-' + String(d).padStart(2,'0');
+    const hasSess = !!byDay[key];
+    const isToday = key === todayStr;
+    let cls = 'cal-day';
+    if (isToday) cls += ' today';
+    if (hasSess) cls += ' has-session';
+    cells += `<div class="${cls}"><div class="cal-day-num" onclick="${prefix}CalDayTap('${key}')">${d}</div></div>`;
+  }
+
+  return `
+    <div class="cal-nav">
+      <button class="cal-nav-btn" onclick="${prefix}CalPrev()">&#8249;</button>
+      <span class="cal-title">${DE_MONTHS[month]} ${year}</span>
+      <button class="cal-nav-btn" onclick="${prefix}CalNext()">&#8250;</button>
+    </div>
+    <div class="cal-grid">
+      <div class="cal-weekdays">${DE_DAYS_SHORT.map(d=>`<div class="cal-wd">${d}</div>`).join('')}</div>
+      <div class="cal-days">${cells}</div>
+    </div>
+    <div class="cal-legend"><div class="cal-legend-dot"></div>Training absolviert</div>`;
+}
+
+function wkCalPrev() {
+  _histCalMonth--;
+  if (_histCalMonth < 0) { _histCalMonth = 11; _histCalYear--; }
+  renderHistory();
+}
+function wkCalNext() {
+  _histCalMonth++;
+  if (_histCalMonth > 11) { _histCalMonth = 0; _histCalYear++; }
+  renderHistory();
+}
+
+function wkCalDayTap(dateStr) {
+  const history = load(KEYS.history);
+  const sessions = history.filter(h => h.date.slice(0,10) === dateStr);
+  if (!sessions.length) return;
+  const d = new Date(dateStr + 'T00:00:00');
+  const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  document.getElementById('wk-day-sheet-date').textContent = dayNames[d.getDay()] + ', ' + d.toLocaleDateString('de-DE', {day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('wk-day-sheet-content').innerHTML = sessions.map((h, si) => {
     const detailHtml = (h.exercises || []).map(ex =>
-      `<div class="history-detail-ex">${esc(ex.name)} — ${ex.setsCompleted}/${ex.totalSets} Sätze · ${ex.targetReps} Wdh. · ${ex.targetWeight} kg</div>`
+      `<div class="day-entry-ex">${esc(ex.name)} — ${ex.setsCompleted}/${ex.totalSets} Sätze · ${ex.targetReps} Wdh. · ${ex.targetWeight} kg</div>`
     ).join('');
-    return `<div class="history-card" id="hcard-${h.id}">
-      <div class="history-card-header" onclick="toggleHistoryDetail('${h.id}')">
-        <div class="history-card-left">
-          <div class="history-card-name">${esc(h.workoutName)}</div>
-          <div class="history-card-date">${date} · ${time}</div>
-        </div>
-        <div class="history-card-right">
-          <div class="history-card-stats">
-            <div class="history-stat"><strong>${formatTime(h.duration)}</strong>Zeit</div>
-            <div class="history-stat"><strong>${h.setsCompleted}/${h.totalSets}</strong>Sätze</div>
-          </div>
-          <button class="btn-icon" style="color:var(--accent-red);flex-shrink:0;"
-            onclick="event.stopPropagation(); showHistoryDeleteConfirm('${h.id}')" title="Löschen">
-            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/>
-              <path d="M10 11v6M14 11v6"/><path d="M9 6V4h6v2"/>
-            </svg>
-          </button>
-        </div>
-      </div>
-      <div class="history-delete-confirm" id="hdel-${h.id}">
-        <span>Wirklich löschen?</span>
-        <button class="hdc-confirm" onclick="confirmDeleteHistory('${h.id}')">Ja, löschen</button>
-        <button class="hdc-cancel"  onclick="cancelDeleteHistory('${h.id}')">Abbrechen</button>
-      </div>
-      <div class="history-detail" id="hdetail-${h.id}">${detailHtml}</div>
+    const time = new Date(h.date).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+    return `<div class="day-entry">
+      <div class="day-entry-name">${esc(h.workoutName)}</div>
+      <div class="day-entry-meta">${time} Uhr &nbsp;·&nbsp; ${formatTime(h.duration)} &nbsp;·&nbsp; ${h.setsCompleted}/${h.totalSets} Sätze</div>
+      <button class="day-entry-toggle" onclick="toggleDayEntryDetail('wkde-${h.id}', this)">Details anzeigen</button>
+      <div class="day-entry-detail" id="wkde-${h.id}">${detailHtml}</div>
     </div>`;
   }).join('');
+  const bd = document.getElementById('wk-day-backdrop');
+  const sh = document.getElementById('wk-day-sheet');
+  bd.style.display = 'block'; sh.style.display = 'block';
+  requestAnimationFrame(() => sh.classList.add('open'));
 }
 
-function toggleHistoryDetail(id) {
-  document.getElementById('hdetail-' + id).classList.toggle('open');
+function closeWkDaySheet() {
+  const sh = document.getElementById('wk-day-sheet');
+  const bd = document.getElementById('wk-day-backdrop');
+  sh.classList.remove('open');
+  setTimeout(() => { sh.style.display = 'none'; bd.style.display = 'none'; }, 300);
 }
 
-function showHistoryDeleteConfirm(id) {
-  // Hide any other open confirms first
-  document.querySelectorAll('.history-delete-confirm.show').forEach(el => el.classList.remove('show'));
-  document.getElementById('hdel-' + id).classList.add('show');
-}
-
-function cancelDeleteHistory(id) {
-  document.getElementById('hdel-' + id).classList.remove('show');
-}
-
-function confirmDeleteHistory(id) {
-  let history = load(KEYS.history);
-  history = history.filter(h => h.id !== id);
-  save(KEYS.history, history);
-  renderHistory();
+function toggleDayEntryDetail(id, btn) {
+  const el = document.getElementById(id);
+  const open = el.classList.toggle('open');
+  btn.textContent = open ? 'Details ausblenden' : 'Details anzeigen';
 }
 
 function switchWorkoutTab(tab, btn) {
@@ -1684,6 +1821,9 @@ function saveHIITHistory(s, roundsDone) {
   save(KEYS.hiitHistory, hist);
 }
 
+let _hiitCalYear = new Date().getFullYear();
+let _hiitCalMonth = new Date().getMonth();
+
 function toggleHIITVerlauf(btn) {
   const list = document.getElementById('hiit-verlauf-list');
   const open = list.classList.toggle('open');
@@ -1694,41 +1834,71 @@ function toggleHIITVerlauf(btn) {
 function renderHIITVerlauf() {
   const list = document.getElementById('hiit-verlauf-list');
   if (!list.classList.contains('open')) return;
-
-  const hist = load(KEYS.hiitHistory).slice().reverse();
+  const hist = load(KEYS.hiitHistory);
+  const byDay = {};
+  hist.forEach(h => {
+    const key = h.date.slice(0,10);
+    if (!byDay[key]) byDay[key] = [];
+    byDay[key].push(h);
+  });
   if (!hist.length) {
     list.innerHTML = '<div class="hiit-hist-empty">Noch keine HIIT Sessions gespeichert</div>';
     return;
   }
+  list.innerHTML = buildCalendarHTML(_hiitCalYear, _hiitCalMonth, byDay, 'hiit');
+}
 
-  const DE_DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
-  list.innerHTML = hist.map(h => {
-    const d = new Date(h.date);
-    const dayStr = DE_DAYS[d.getDay()];
-    const dateStr = d.toLocaleDateString('de-DE', {day:'2-digit', month:'long', year:'numeric'});
-    return `<div class="hiit-hist-card">
-      <div class="hiit-hist-header">
-        <div class="hiit-hist-info">
-          <div class="hiit-hist-date">${dayStr}, ${dateStr}</div>
-          <div class="hiit-hist-meta">
-            ${h.roundsDone} / ${h.rounds} Runden &nbsp;·&nbsp;
-            💪 ${h.work}s &nbsp;|&nbsp; ⏸ ${h.rest}s &nbsp;·&nbsp;
-            Gesamtdauer: ${formatTime(h.elapsed)}
-          </div>
-        </div>
-        <button class="hiit-hist-del" onclick="showHIITHistConfirm('${h.id}')" title="Löschen">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
-          </svg>
-        </button>
+function hiitCalPrev() {
+  _hiitCalMonth--;
+  if (_hiitCalMonth < 0) { _hiitCalMonth = 11; _hiitCalYear--; }
+  renderHIITVerlauf();
+}
+function hiitCalNext() {
+  _hiitCalMonth++;
+  if (_hiitCalMonth > 11) { _hiitCalMonth = 0; _hiitCalYear++; }
+  renderHIITVerlauf();
+}
+
+function hiitCalDayTap(dateStr) {
+  const hist = load(KEYS.hiitHistory);
+  const sessions = hist.filter(h => h.date.slice(0,10) === dateStr);
+  if (!sessions.length) return;
+  const d = new Date(dateStr + 'T00:00:00');
+  const dayNames = ['Sonntag','Montag','Dienstag','Mittwoch','Donnerstag','Freitag','Samstag'];
+  document.getElementById('hiit-day-sheet-date').textContent = dayNames[d.getDay()] + ', ' + d.toLocaleDateString('de-DE', {day:'2-digit',month:'long',year:'numeric'});
+  document.getElementById('hiit-day-sheet-content').innerHTML = sessions.map(h => {
+    const time = new Date(h.date).toLocaleTimeString('de-DE', {hour:'2-digit',minute:'2-digit'});
+    return `<div class="day-entry" id="hiit-de-${h.id}">
+      <div class="day-entry-name">HIIT Session</div>
+      <div class="day-entry-meta">
+        ${time} Uhr &nbsp;·&nbsp;
+        ${h.roundsDone} / ${h.rounds} Runden &nbsp;·&nbsp;
+        💪 ${h.work}s / ⏸ ${h.rest}s &nbsp;·&nbsp;
+        Gesamtdauer: ${formatTime(h.elapsed)}
       </div>
       <div class="hiit-hist-confirm" id="hhc-${h.id}">
         <span>Wirklich löschen?</span>
         <button class="hdc-confirm" onclick="confirmHIITHistDelete('${h.id}')">Ja</button>
         <button class="hdc-cancel"  onclick="cancelHIITHistDelete('${h.id}')">Abbrechen</button>
       </div>
+      <button class="btn-icon" style="color:var(--text-muted);margin-top:6px;" onclick="showHIITHistConfirm('${h.id}')" title="Löschen">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
     </div>`;
   }).join('');
+  const bd = document.getElementById('hiit-day-backdrop');
+  const sh = document.getElementById('hiit-day-sheet');
+  bd.style.display = 'block'; sh.style.display = 'block';
+  requestAnimationFrame(() => sh.classList.add('open'));
+}
+
+function closeHiitDaySheet() {
+  const sh = document.getElementById('hiit-day-sheet');
+  const bd = document.getElementById('hiit-day-backdrop');
+  sh.classList.remove('open');
+  setTimeout(() => { sh.style.display = 'none'; bd.style.display = 'none'; }, 300);
 }
 
 function showHIITHistConfirm(id) {
@@ -1742,6 +1912,7 @@ function confirmHIITHistDelete(id) {
   let hist = load(KEYS.hiitHistory);
   hist = hist.filter(h => h.id !== id);
   save(KEYS.hiitHistory, hist);
+  closeHiitDaySheet();
   renderHIITVerlauf();
 }
 
@@ -1754,41 +1925,37 @@ function renderRoutineList() {
   const el = document.getElementById('routine-list');
   const routines = load(KEYS.routines);
   if (!routines.length) {
-    el.innerHTML = `<div class="empty-state"><p>No routines yet.<br>Create your first one.</p></div>`;
+    el.innerHTML = `<div class="empty-state"><p>Noch keine Routinen.<br>Erstelle deine erste Routine!</p></div>`;
     return;
   }
   el.innerHTML = routines.map(r => `
-    <div class="routine-card" id="rcard-${r.id}">
+    <div class="routine-card" id="rcard-${r.id}" onclick="showRoutineDetail('${r.id}')">
       <div class="routine-card-info">
         <div class="routine-card-name">${esc(r.name)}</div>
         ${r.description ? `<div class="routine-card-desc">${esc(r.description)}</div>` : ''}
-        <div class="routine-card-count">${r.exercises.length} exercise${r.exercises.length !== 1 ? 's' : ''}</div>
+        <div class="routine-card-count">${r.exercises.length} Übung${r.exercises.length !== 1 ? 'en' : ''}</div>
         <div class="routine-card-confirm" id="rdel-confirm-${r.id}">
-          <p>Really delete this routine?</p>
+          <p>Routine wirklich löschen?</p>
           <div class="routine-card-confirm-btns">
-            <button class="btn btn-danger btn-sm" onclick="confirmDeleteRoutine('${r.id}')">Yes, delete</button>
-            <button class="btn btn-secondary btn-sm" onclick="cancelDeleteRoutine('${r.id}')">Cancel</button>
+            <button class="btn btn-danger btn-sm" onclick="event.stopPropagation();confirmDeleteRoutine('${r.id}')">Ja, löschen</button>
+            <button class="btn btn-secondary btn-sm" onclick="event.stopPropagation();cancelDeleteRoutine('${r.id}')">Abbrechen</button>
           </div>
         </div>
       </div>
-      <div class="routine-card-actions">
-        <button class="btn-icon" onclick="showRoutineDetail('${r.id}')" title="View">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
-          </svg>
-        </button>
-        <button class="btn-icon" onclick="showRoutineBuilder('${r.id}')" title="Edit">
+      <div class="routine-card-actions" onclick="event.stopPropagation()">
+        <button class="btn-icon" onclick="showRoutineBuilder('${r.id}')" title="Bearbeiten">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
             <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
           </svg>
         </button>
-        <button class="btn-icon" style="color:var(--accent-red);" onclick="showDeleteRoutineConfirm('${r.id}')" title="Delete">
+        <button class="btn-icon" style="color:var(--accent-red);" onclick="showDeleteRoutineConfirm('${r.id}')" title="Löschen">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
           </svg>
         </button>
       </div>
+      <div class="routine-card-chevron">›</div>
     </div>
   `).join('');
 }
@@ -1818,13 +1985,13 @@ function showRoutineBuilder(id) {
     const routines = load(KEYS.routines);
     const r = routines.find(x => x.id === id);
     if (r) {
-      document.getElementById('routine-builder-title').textContent = 'Edit Routine';
+      document.getElementById('routine-builder-title').textContent = 'Routine bearbeiten';
       document.getElementById('routine-name-input').value = r.name;
       document.getElementById('routine-desc-input').value = r.description || '';
       r.exercises.forEach(ex => addRoutineExRow(ex));
     }
   } else {
-    document.getElementById('routine-builder-title').textContent = 'New Routine';
+    document.getElementById('routine-builder-title').textContent = 'Neue Routine';
     document.getElementById('routine-name-input').value = '';
     document.getElementById('routine-desc-input').value = '';
     addRoutineExRow();
@@ -1854,11 +2021,11 @@ function addRoutineExRow(ex = null) {
   const handle = document.createElement('span');
   handle.className = 'drag-handle';
   handle.textContent = '⠿';
-  handle.title = 'Drag to reorder';
+  handle.title = 'Ziehen zum Sortieren';
 
   const nameInput = document.createElement('input');
   nameInput.type = 'text';
-  nameInput.placeholder = 'Exercise name';
+  nameInput.placeholder = 'Übungsname';
   nameInput.className = 'rtn-ex-name';
   nameInput.value = ex ? esc(ex.name) : '';
   nameInput.style.flex = '1';
@@ -1876,7 +2043,7 @@ function addRoutineExRow(ex = null) {
 
   const noteInput = document.createElement('input');
   noteInput.type = 'text';
-  noteInput.placeholder = 'Optional note, e.g. keep back straight';
+  noteInput.placeholder = 'Optionale Notiz, z.B. Rücken gerade halten';
   noteInput.className = 'rtn-ex-note-input';
   noteInput.value = ex ? (ex.note || '') : '';
   noteInput.style.fontSize = '14px';
@@ -1899,8 +2066,8 @@ function addRoutineExRow(ex = null) {
     return group;
   }
 
-  fields.appendChild(makeRtnInputGroup('Sets', 'rtn-ex-sets', 1, 20, ex ? ex.sets : 3));
-  fields.appendChild(makeRtnInputGroup('Reps', 'rtn-ex-reps', 1, 50, ex ? ex.reps : 10));
+  fields.appendChild(makeRtnInputGroup('Sätze', 'rtn-ex-sets', 1, 20, ex ? ex.sets : 3));
+  fields.appendChild(makeRtnInputGroup('Wdh.', 'rtn-ex-reps', 1, 50, ex ? ex.reps : 10));
 
   row.appendChild(header);
   row.appendChild(noteInput);
@@ -1949,7 +2116,7 @@ function showRoutineDetail(id) {
   if (!r) return;
 
   document.getElementById('rtn-detail-name').textContent = r.name;
-  document.getElementById('rtn-detail-count').textContent = r.exercises.length + ' exercise' + (r.exercises.length !== 1 ? 's' : '');
+  document.getElementById('rtn-detail-count').textContent = r.exercises.length + ' Übung' + (r.exercises.length !== 1 ? 'en' : '');
 
   const descBlock = document.getElementById('rtn-detail-desc-block');
   descBlock.innerHTML = r.description
@@ -1987,7 +2154,7 @@ function renderHIITProgrammes() {
     <div class="prog-list-card">
       <div class="prog-list-info">
         <div class="prog-list-name">${esc(p.name)}</div>
-        <div class="prog-list-meta">${p.rounds} Rounds &bull; ${p.work}s work / ${p.rest}s rest</div>
+        <div class="prog-list-meta">${p.rounds} Runden &bull; ${p.work}s Belastung / ${p.rest}s Pause</div>
         <div class="prog-list-confirm" id="prog-del-confirm-${p.id}">
           <p>Programm wirklich löschen?</p>
           <div class="prog-list-confirm-btns">
@@ -2170,7 +2337,7 @@ function openWorkoutSheet(i) {
   document.getElementById('wk-sheet-exlist').innerHTML = w.exercises.map(ex =>
     `<div class="wk-sheet-ex-row">
       <span class="wk-sheet-ex-name">${esc(ex.name)}</span>
-      <span class="wk-sheet-ex-meta">${ex.sets} sets × ${ex.reps} reps — ${ex.weight} kg</span>
+      <span class="wk-sheet-ex-meta">${ex.sets} Sätze × ${ex.reps} Wdh. — ${ex.weight} kg</span>
     </div>`
   ).join('');
   const bd = document.getElementById('wk-sheet-backdrop');
@@ -2216,9 +2383,20 @@ function renderWeightScreen() {
   const todayVal = data[today];
   document.getElementById('weight-display-val').textContent = todayVal != null ? todayVal.toFixed(1) : '--';
   document.getElementById('weight-input').value = todayVal != null ? todayVal : '';
-  document.getElementById('weight-save-hint').textContent = todayVal != null ? 'Last saved today: ' + todayVal.toFixed(1) + ' kg' : '';
+  document.getElementById('weight-save-hint').textContent = todayVal != null ? 'Heute gespeichert: ' + todayVal.toFixed(1) + ' kg' : '';
+  const goalVal = loadObj(KEYS.weightGoal, null);
+  document.getElementById('weight-goal-input').value = goalVal != null ? goalVal : '';
+  document.getElementById('weight-goal-hint').textContent = goalVal != null ? 'Ziel: ' + Number(goalVal).toFixed(1) + ' kg' : '';
   renderWeightGraph();
   renderWeightHistory();
+}
+
+function saveWeightGoal() {
+  const val = parseFloat(document.getElementById('weight-goal-input').value);
+  if (isNaN(val) || val < 20 || val > 300) return;
+  save(KEYS.weightGoal, val);
+  document.getElementById('weight-goal-hint').textContent = 'Ziel: ' + val.toFixed(1) + ' kg';
+  renderWeightGraph();
 }
 
 function saveWeightEntry() {
@@ -2280,9 +2458,14 @@ function renderWeightGraph() {
   const w = cssW - pad.left - pad.right;
   const h = cssH - pad.top - pad.bottom;
 
+  const goalVal = loadObj(KEYS.weightGoal, null);
   const vals = entries.map(e => e.val);
-  const minV = Math.min(...vals) - 2;
-  const maxV = Math.max(...vals) + 2;
+  let minV = Math.min(...vals) - 2;
+  let maxV = Math.max(...vals) + 2;
+  if (goalVal != null) {
+    if (goalVal < minV) minV = goalVal - 2;
+    if (goalVal > maxV) maxV = goalVal + 2;
+  }
   const rangeV = maxV - minV || 1;
 
   const xFor = i => pad.left + (i / (entries.length - 1)) * w;
@@ -2341,6 +2524,25 @@ function renderWeightGraph() {
     ctx.fill();
   });
 
+  // Goal line
+  if (goalVal != null) {
+    const gy = yFor(goalVal);
+    ctx.save();
+    ctx.setLineDash([6, 4]);
+    ctx.strokeStyle = 'rgba(29,185,84,0.5)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(pad.left, gy);
+    ctx.lineTo(pad.left + w, gy);
+    ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.fillStyle = '#1DB954';
+    ctx.font = '11px system-ui';
+    ctx.textAlign = 'right';
+    ctx.fillText('Ziel: ' + Number(goalVal).toFixed(1) + ' kg', pad.left + w - 2, gy - 4);
+    ctx.restore();
+  }
+
   // Touch / tap for tooltip
   const pts = entries.map((e, i) => ({ x: xFor(i), y: yFor(e.val), e }));
   canvas.ontouchstart = canvas.onclick = function(ev) {
@@ -2391,7 +2593,7 @@ function renderWeightHistory() {
   const entries = Object.keys(data).sort().reverse().map(k => ({ date: k, val: data[k] }));
   const el = document.getElementById('weight-hist-list');
   if (!entries.length) {
-    el.innerHTML = '<div class="weight-canvas-empty">No entries yet.</div>';
+    el.innerHTML = '<div class="weight-canvas-empty">Noch keine Einträge.</div>';
     return;
   }
   const DE_DAYS = ['So','Mo','Di','Mi','Do','Fr','Sa'];
@@ -2403,14 +2605,14 @@ function renderWeightHistory() {
       <div class="weight-hist-row">
         <span class="weight-hist-date">${dayStr}, ${dateStr}</span>
         <span class="weight-hist-val">${e.val.toFixed(1)} kg</span>
-        <button class="weight-hist-del" onclick="showWeightDelConfirm('${e.date}')" title="Delete">
+        <button class="weight-hist-del" onclick="showWeightDelConfirm('${e.date}')" title="Löschen">
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       </div>
       <div class="weight-hist-confirm" id="wdel-${e.date}">
-        <span>Delete this entry?</span>
-        <button class="hdc-confirm" onclick="confirmWeightDelete('${e.date}')">Yes</button>
-        <button class="hdc-cancel"  onclick="cancelWeightDelete('${e.date}')">Cancel</button>
+        <span>Eintrag löschen?</span>
+        <button class="hdc-confirm" onclick="confirmWeightDelete('${e.date}')">Ja</button>
+        <button class="hdc-cancel"  onclick="cancelWeightDelete('${e.date}')">Abbrechen</button>
       </div>
     </div>`;
   }).join('');
@@ -2449,6 +2651,9 @@ document.querySelectorAll('.screen').forEach(el => {
 });
 document.getElementById('hiit-verlauf-list').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 document.getElementById('wk-sheet-exlist').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+document.getElementById('weight-hist-scroll').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+document.getElementById('wk-day-sheet').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
+document.getElementById('hiit-day-sheet').addEventListener('touchmove', e => e.stopPropagation(), { passive: true });
 
 // Unlock audio context on first user interaction
 document.body.addEventListener('touchstart', () => getAudioCtx(), { once: true, passive: true });
