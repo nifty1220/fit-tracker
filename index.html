@@ -282,16 +282,16 @@
     display: flex; align-items: center; justify-content: space-between;
   }
   .session-timer { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--accent); }
-  .rest-timer-overlay {
+  .-timer-overlay {
     position: fixed; top: 0; left: 50%; transform: translateX(-50%);
     width: 100%; max-width: 480px; height: 100%;
     background: rgba(0,0,0,0.85); z-index: 200;
     display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 16px;
   }
-  .rest-timer-overlay h2 { font-size: 20px; color: var(--text-sec); }
-  .rest-timer-count { font-size: 96px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
-  .rest-timer-overlay .btn { margin-top: 16px; }
+  .-timer-overlay h2 { font-size: 20px; color: var(--text-sec); }
+  .-timer-count { font-size: 96px; font-weight: 900; color: var(--accent); font-variant-numeric: tabular-nums; line-height: 1; }
+  .-timer-overlay .btn { margin-top: 16px; }
 
   .ex-session-card { background: var(--card); border-radius: var(--radius); margin: 0 16px 10px; overflow: hidden; }
   .ex-session-header { padding: 14px 16px 10px; font-size: 16px; font-weight: 700; }
@@ -362,7 +362,7 @@
     font-size: 36px; font-weight: 900; letter-spacing: 3px; text-transform: uppercase;
   }
   .hiit-phase.work { color: var(--accent-red); }
-  .hiit-phase.rest { color: var(--accent); }
+  .hiit-phase. { color: var(--accent); }
   .hiit-countdown {
     font-size: 120px; font-weight: 900; line-height: 1;
     font-variant-numeric: tabular-nums; color: var(--text);
@@ -755,7 +755,7 @@
       <div style="display:flex;gap:12px;align-items:center;">
         <div style="text-align:right;">
           <div style="font-size:12px;color:var(--text-sec);">Pause (s)</div>
-          <input type="number" id="rest-duration-input" value="60" min="5" max="300"
+          <input type="number" id="rest-duration-input" value="30" min="5" max="300"
             style="width:58px;text-align:center;font-size:14px;padding:6px;background:var(--input);border:none;border-radius:6px;color:var(--text);">
         </div>
         <button class="btn btn-danger btn-sm" onclick="endWorkout()">Beenden</button>
